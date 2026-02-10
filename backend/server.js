@@ -4,4 +4,11 @@ const PORT = 3000;
 
 app.use(express.json);
  
-app.get('/')
+app.get('/', (req, res) => {
+    res.send('Backend is running')
+});
+
+app.listen(PORT, () => {
+    console.log('Server Running on Port ${PORT}');
+
+});
