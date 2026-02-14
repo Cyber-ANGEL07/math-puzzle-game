@@ -6,9 +6,17 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <div class="menu-container">
+    <div id="menuScreen" class="menu-container">
   
       <h1 class="game-title">Banana Math Game</h1>
+
+      <input
+        type="text"
+        id="usernameInput"
+        class="username-input"
+        placeholder="Enter your username"
+    />
+
   
       <div id="notification" class="notification hidden"></div>
   
@@ -27,8 +35,35 @@
       
   
     </div>
+
+    <div id="gameScreen" class="game-container hidden">
+
+        <div class="top-bar">
+          Player: <span id="playerName"></span>
+          | Level: <span id="level">1</span>
+          | Score: <span id="score">0</span>
+        </div>
+      
+        <div id="puzzleArea" class="puzzle-area">
+          Puzzle will appear here 🍌
+        </div>
+      
+        <input
+          type="number"
+          id="answerInput"
+          placeholder="Enter your answer"
+        />
+      
+        <button id="submitBtn">Submit</button>
+      
+        <div id="feedback"></div>
+      
+      </div>
+      
   
+    <script src="app.js"></script>
     <script src="script.js"></script>
+    
   </body>
   
 </html>
