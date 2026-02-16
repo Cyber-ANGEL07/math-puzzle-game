@@ -35,29 +35,22 @@ function showNotification(message, isError = false) {
     }
   });
   
-  // Play button: start the game
+  //Start the game
   playBtn.addEventListener('click', () => {
     const username = usernameInput.value.trim();
+    if (!username) { alert("Enter username"); return; }
   
-    if (!username) {
-      alert("Please enter a username");
-      return;
+    // Ask user if they want to login or register
+    const action = prompt("Type 'login' to login or 'register' to create a new account:").toLowerCase();
+    if (action === "register") {
+      register();
+    } else if (action === "login") {
+      login();
+    } else {
+      alert("Invalid choice. Type 'login' or 'register'.");
     }
-  
-    // Save username
-    localStorage.setItem("banana_username", username);
-    playerName.textContent = username;
-  
-    // Switch screens
-    menuScreen.classList.add('hidden');
-    gameScreen.classList.remove('hidden');
-  
-    // Notification
-    showNotification(`Welcome, ${username}! Game starting...`);
-  
-    // Start game logic
-    startGame();
   });
+  
   
   // Daily Challenge logic
   dailyBtn.addEventListener('click', () => {
@@ -78,4 +71,56 @@ function showNotification(message, isError = false) {
     console.log("Game started! Insert puzzle logic here.");
     // You can implement puzzle generation, score updates, etc.
   }
+
+  // REGISTER
+async function register() {
+    const username = usernameInput.value.trim();
+    const password = prompt("Enter a password for registration:");
+    if (!username || !password) return alert("Username and password required");
+  
+    const res = await fetch("http://localhost:3000/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+  
+    const data = await res.json();
+    if (res.ok) {
+      alert("Registered successfully! Please login.");
+    } else {
+      alert(data.error);
+    }
+  }
+  
+  // LOGIN
+  async function login() {
+    const username = usernameInput.value.trim();
+    const password = prompt("Enter your password:");
+    if (!username || !password) return alert("Username and password required");
+  
+    const res = await fetch("http://localhost:3000/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+  
+    const data = await res.json();
+    if (res.ok) {
+      // Save identity locally
+      localStorage.setItem("userId", data.userId);
+      localStorage.setItem("username", data.username);
+  
+      // Switch screens
+      menuScreen.classList.add('hidden');
+      gameScreen.classList.remove('hidden');
+  
+      playerName.textContent = data.username;
+      showNotification(`Welcome back, ${data.username}! Game starting...`);
+  
+      startGame();
+    } else {
+      alert(data.error);
+    }
+  }
+  
   
