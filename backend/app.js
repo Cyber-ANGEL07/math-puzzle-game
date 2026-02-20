@@ -1,27 +1,75 @@
-let level = 1;
-let score = 0;
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const connectDB = require("./db");
+const User = require("./models/User");
 
-function startGame() {
-  const username = localStorage.getItem("banana_username");
+console.log('MONGO_URI is:', process.env.MONGO_URI);
 
-  // Restore progress if available
-  const savedProgress = localStorage.getItem("banana_progress");
-  if (savedProgress) {
-    const data = JSON.parse(savedProgress);
-    level = data.level;
-    score = data.score;
+
+const app = express();
+connectDB();
+
+app.use(cors());
+app.use(express.json());
+
+// Test route
+app.get("/", (req, res) => {
+  res.send("Math Reflex Survival Backend Running 🚀");
+});
+
+// REGISTER route
+app.post("/register", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const existingUser = await User.findOne({ username });
+    if (existingUser) return res.status(400).json({ error: "User already exists" });
+
+    const newUser = new User({ username, password });
+    await newUser.save();
+
+    res.json({ message: "User registered successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
+});
 
-  // Show player info
-  document.getElementById("playerName").textContent = username;
-  document.getElementById("level").textContent = level;
-  document.getElementById("score").textContent = score;
+// LOGIN route
+app.post("/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const user = await User.findOne({ username, password });
+    if (!user) return res.status(400).json({ error: "Invalid credentials" });
 
-  // Show puzzle placeholder
-  loadPuzzle();
-}
+    res.json({
+      userId: user._id,
+      username: user.username
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
-function loadPuzzle() {
-  document.getElementById("puzzleArea").textContent =
-    "Puzzle will load here 🍌";
-}
+app.post("/register", async (req, res) => {
+  try {
+    const { username, password, phone } = req.body;
+    if (!username || !password || !phone) {
+      return res.status(400).json({ error: "All fields required" });
+    }
+
+    const existingUser = await User.findOne({ username });
+    if (existingUser) return res.status(400).json({ error: "User already exists" });
+
+    const newUser = new User({ username, password, phone });
+    await newUser.save();
+
+    res.json({ message: "User registered successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -1,69 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Banana Math Game</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Math Reflex Survival - Menu</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="menuScreen" class="menu-container">
-  
-      <h1 class="game-title">Banana Math Game</h1>
 
-      <input
-        type="text"
-        id="usernameInput"
-        class="username-input"
-        placeholder="Enter your username"
-    />
+  <div class="menu-container">
+    <h1>🍌 Math Reflex Survival</h1>
+    <p>Welcome, <span id="playerName" class="username"></span>!</p>
 
-  
-      <div id="notification" class="notification hidden"></div>
-  
-      <button id="playBtn" class="play-button">▶</button>
-  
-      <div class="stats">
-        <p>Score: <span id="score">0</span></p>
-        <p>Coins: <span id="coins">0</span></p>
-      </div>
-  
-      <div class="menu-buttons">
-        <button id="dailyBtn">📅</button>
-        <button id="settingsBtn">⚙️</button>
-        <button id="shareBtn">📤</button>
-      </div>
-      
-  
-    </div>
+    <button onclick="logout()">Logout</button>
 
-    <div id="gameScreen" class="game-container hidden">
 
-        <div class="top-bar">
-          Player: <span id="playerName"></span>
-          | Level: <span id="level">1</span>
-          | Score: <span id="score">0</span>
-        </div>
-      
-        <div id="puzzleArea" class="puzzle-area">
-          Puzzle will appear here 🍌
-        </div>
-      
-        <input
-          type="number"
-          id="answerInput"
-          placeholder="Enter your answer"
-        />
-      
-        <button id="submitBtn">Submit</button>
-      
-        <div id="feedback"></div>
-      
-      </div>
-      
-  
-    <script src="app.js"></script>
-    <script src="script.js"></script>
-    
-  </body>
-  
+    <button class="play-btn" onclick="startGame()">Play Game</button>
+    <button class="daily-btn" onclick="dailyChallenge()">Daily Challenge</button>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    // 🔐 Check if user is logged in
+    const userId = localStorage.getItem("userId");
+    const username = localStorage.getItem("username");
+
+    if (!userId) {
+      window.location.href = "auth.html";
+    }
+
+    // Display username
+    document.getElementById("playerName").textContent = username;
+
+    function startGame() {
+      window.location.href = "game.html";
+    }
+
+    function dailyChallenge() {
+      const today = new Date().toDateString();
+      const lastPlayed = localStorage.getItem("dailyChallengeDate");
+
+      if (lastPlayed === today) {
+        alert("You already played today's challenge!");
+      } else {
+        localStorage.setItem("dailyChallengeDate", today);
+        alert("Starting Daily Challenge!");
+        window.location.href = "game.html";
+      }
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "auth.html";
+    }
+  </script>
+
+</body>
 </html>
