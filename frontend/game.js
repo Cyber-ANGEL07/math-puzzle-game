@@ -3,6 +3,9 @@ let level = 1;
 let timer = 30;
 let currentAnswer = null;
 let interval = null;
+let puzzleCount = 0;
+const maxPuzzles = 3;
+let timerPaused = false;
 
 console.log("Script loaded");
 
@@ -22,17 +25,22 @@ function startGame() {
 }
 
 function updateTimer() {
-    timer--;
-    document.getElementById("timer").textContent = timer;
+    if (!timerPaused) {
+        timer--;
+        document.getElementById("timer").textContent = timer;
 
-    if (timer <=0 ) {
-        clearInterval(interval)
-        endGame();
+        if (timer <=0 ) {
+            clearInterval(interval)
+            endGame();
+        }
     }
+    
 }
 
 async function generatePuzzle() {
+    timerPaused = true; //pause timer while fetching the puzzle
     console.log("Generating Puzzle...")
+
     try {
         //Getting Random numbers
         const numberRes = await fetch("https://api.mathjs.org/v4/?expr=randomInt(1,10)");
@@ -88,9 +96,57 @@ async function generatePuzzle() {
     } catch (error) {
         console.error("API error:", error);
         document.getElementById("puzzle").textContent = "Error loading puzzle.";
+    } finally {
+        timerPaused = false; //resume timer after puzzle is loaded
     }
+}
+
+function showNotification(message, isError = false) {
+    const feedback = document.getElementById("feedback");
+    feedback.textContent = message;
+
+    // Optional styling
+    feedback.style.color = isError ? "red" : "green";
 }
 
 function endGame() {
     alert("Game Over! Your score: " + score);
 }
+
+function submitAnswer() {
+    const input = document.getElementById("answerInput");
+    const userAnswer = parseInt(input.value);
+
+    //Clear input immediately
+    input.value = "";
+
+    puzzleCount++;  // increment puzzle count for every answer
+
+    if (userAnswer === currentAnswer) {
+        //Correct
+        score += 10;
+        level += 1;
+        timer += 5;
+        showNotification("CORRECT!");
+    } else {
+        //Wrong
+        timer -= 5
+        showNotification("WRONG!", true)
+    }
+
+    //Update UI
+    document.getElementById("score").textContent = score;
+    document.getElementById("level").textContent = level;
+    document.getElementById("timer").textContent = timer;
+
+    if (puzzleCount >= maxPuzzles || timer <= 0) {
+        endGame();
+    } else {
+        generatePuzzle();
+    }
+
+    
+    }
+
+   
+

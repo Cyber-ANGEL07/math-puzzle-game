@@ -1,6 +1,7 @@
 const API_URL = "http://localhost:3000";
 
 async function register() {
+
   const username = document.getElementById("username").value.trim();
   const password = document.getElementById("password").value.trim();
   const phone = document.getElementById("phone").value.trim();

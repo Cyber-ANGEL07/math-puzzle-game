@@ -21,14 +21,18 @@ app.get("/", (req, res) => {
 // REGISTER route
 app.post("/register", async (req, res) => {
   try {
-    const { username, password } = req.body;
+    
+    console.log("BODY RECEIVED:", req.body);
+    
+    const { username, password, phone } = req.body;
     const existingUser = await User.findOne({ username });
     if (existingUser) return res.status(400).json({ error: "User already exists" });
 
-    const newUser = new User({ username, password });
+    const newUser = new User({ username, password, phone });
     await newUser.save();
 
     res.json({ message: "User registered successfully" });
+
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
