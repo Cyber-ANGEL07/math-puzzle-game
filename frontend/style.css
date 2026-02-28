@@ -56,3 +56,77 @@ button {
 button:hover {
   opacity: 0.85;
 }
+
+#gameContainer {
+  max-width: 500px;
+  margin: 0 auto;
+  font-family: sans-serif;
+  text-align: center;
+}
+
+#levelSelector ul {
+  list-style: none;
+  padding: 0;
+}
+
+.level {
+  margin: 10px 0;
+  padding: 8px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.level.unlocked {
+  background-color: #4caf50;
+  color: white;
+}
+
+.level.locked {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+}
+
+#puzzleArea input {
+  padding: 5px;
+  width: 70%;
+  margin-right: 5px;
+}
+
+#guessBtn {
+  padding: 5px 10px;
+}
+
+#hint {
+  margin-top: 15px;
+  color: #333;
+}
+
+.levelBtn {
+  display: inline-block;
+  padding: 15px 25px;
+  margin: 10px;
+  font-size: 18px;
+  background-color: #4caf50;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;   /* removes underline */
+  text-align: center;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.levelBtn:hover {
+  background-color: #45a049;
+}
+
+.levelBtn:disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.levelBtn:not(:disabled) {
+  background-color: #4caf50;
+  color: white;
+}

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trivia & Math Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Level Menu -->
+  <div id="levelMenu">
+    <h1>Trivia & Math Game</h1>
+    <h2>Select a Level</h2>
+    <a href="trivia.html" class="levelBtn">Level 1: Trivia 🟢</a>
+    <button id="level2Btn" class="levelBtn" disabled>Level 2: Math ⚪</button>
+    <button id="level3Btn" class="levelBtn" disabled>Level 3: Bonus Facts ⚪</button>
+  </div>
+
+  <!-- Game Container -->
+  <div id="gameContainer" style="display: none;">
+    <h2 id="levelTitle"></h2>
+    <div id="triviaArea">
+      <p id="triviaQuestion">Question will appear here</p>
+      <input type="text" id="guessInput" placeholder="Enter your answer" />
+      <button id="guessBtn">Submit</button>
+      <p id="hint"></p>
+    </div>
+  </div>
+
+  <!-- Link your game.js here -->
+  <script src="game.js"></script>
+
+</body>
+</html>
