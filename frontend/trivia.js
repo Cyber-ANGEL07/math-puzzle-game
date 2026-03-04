@@ -9,6 +9,12 @@ let maxTime = 15;          // seconds per question
 let timerInterval = null;   // stores setInterval
 const TIME_PER_QUESTION = 15;        // correct answer for current question
 
+function decodeHtml(html) {
+  const txt = document.createElement("textarea");
+  txt.innerHTML = html;
+  return txt.value;
+}
+
 // ==========================
 // START GAME
 // ==========================
@@ -24,7 +30,7 @@ function nextLevel() {
 function startGame() {
   attempts = maxAttempts;
   document.getElementById("score").innerText = `Score: ${score} | Attempts left: ${attempts}`;
-  document.getElementById("hint").innerText = "";
+  document.getElementById("hint").textContent = `Category: ${decodeHtml(data.results[0].category)}`;
   document.getElementById("guessInput").value = "";
 
   loadTriviaQuestion(); // Load next trivia question
@@ -33,16 +39,32 @@ function startGame() {
 async function loadTriviaQuestion() {
   if (!gameActive) return;
 
+  const guessBtn = document.getElementById("guessBtn");
+  guessBtn.disabled = true; // ❌ disable button while loading
+
+  clearInterval(timerInterval);
+
   attemptsLeft = 3;  // reset attempts for new question
-  questionNumber++;
 
   document.getElementById("score").innerText =
     `Score: ${score} | Attempts left: ${attemptsLeft}`;
 
   try {
     const response = await fetch("http://localhost:3000/api/trivia");
-    if (!response.ok) throw new Error(`Trivia API responded with status ${response.status}`);
+
+    // Handle API failures gracefully
+    if (!response.ok) {
+      console.log("Trivia API temporary failure. Retrying...");
+      return setTimeout(loadTriviaQuestion, 2000); // retry after 2 sec
+    }
+    
     const data = await response.json();
+    
+    // Optional: also check if OpenTDB returned no results
+    if (!data.results || data.results.length === 0) {
+      console.log("Trivia API returned empty results. Retrying...");
+      return setTimeout(loadTriviaQuestion, 2000); // retry after 2 sec
+    }
 
     if (!data.results || data.results.length === 0) {
       showFeedback("Trivia question unavailable. Trying again…", false);
@@ -52,9 +74,12 @@ async function loadTriviaQuestion() {
 
     triviaAnswer = data.results[0].correct_answer;
     const question = data.results[0].question;
-    document.getElementById("triviaQuestion").textContent = question;
+    document.getElementById("triviaQuestion").textContent = decodeHtml(data.results[0].question);
     document.getElementById("hint").textContent = `Category: ${data.results[0].category}`;
     document.getElementById("guessInput").value = "";
+
+    // Re-enable the button now that question is ready
+    guessBtn.disabled = false;
 
     //Show the category and difficulty
     const difficulty = data.results[0].difficulty; //easy,medium,hard
@@ -76,14 +101,24 @@ async function loadTriviaQuestion() {
         timeLeft = 15;
 
     }
-    updateTimerUI;
-    startTimer;
+    updateTimerUI();
+    startTimer();
     
   } catch (error) {
-    alert("Trivia API failed. Please try again later."); 
-    console.error(error);
+    console.error(error); // still log for debugging
+  
+      const guessBtn = document.getElementById("guessBtn");
+      
+      // Optional polish:
+      showFeedback("⏳ Loading next question… please wait", false); // friendly message
+      guessBtn.disabled = true; // prevent clicks
+  
+      setTimeout(() => {
+          loadTriviaQuestion();      // retry fetching question
+          guessBtn.disabled = false; // re-enable button after question loads
+      }, 2000);
   }
-  startTimer();
+
 }
 
 function startTimer() {
@@ -165,6 +200,9 @@ function generateHint(answer) {
 
 function nextOrEnd() {
   clearInterval(timerInterval); // stop timer
+
+  questionNumber++;
+
   if (questionNumber >= TOTAL_QUESTIONS) {
     showResults();
   } else {
