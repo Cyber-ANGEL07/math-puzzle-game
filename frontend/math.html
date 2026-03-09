@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Puzzle Game</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<div id="resultModal" class="modal hidden">
+
+    <div class="modal-content">
+  
+      <h2 id="resultTitle">Round Complete!</h2>
+  
+      <!-- Stars -->
+      <div id="stars">
+        <span class="star">★</span>
+        <span class="star">★</span>
+        <span class="star">★</span>
+      </div>
+  
+      <p id="finalScore">Score: 0</p>
+  
+      <div class="modal-buttons">
+        <button id="retryBtn">🔄 Retry</button>
+        <button id="homeBtn">🏠 Home</button>
+        <button id="nextBtn">➡ Next Mode</button>
+      </div>
+  
+    </div>
+  
+  </div>
+
+  <body>     
+
+<div id="gameContainer">
+
+<h1>🧠 Math Challenge</h1>
+
+<p id="score">Score: 0 | Attempts left: 3</p>
+
+<h2 id="mathQuestion">Loading question...</h2>
+
+<div class="timer-wrapper">
+    <div id="timerContainer">
+        <div id="timerBar"></div>
+    </div>
+    <p id="timer">Timer: 15s</p>
+</div>
+
+<input type="number" id="mathInput" placeholder="Enter answer">
+
+<button id="submitBtn">Submit Answer</button>
+
+<p id="feedback"></p>
+
+</div>
+
+<script src="math.js"></script>
+
+</body>
+</html>

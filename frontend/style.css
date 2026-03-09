@@ -298,3 +298,15 @@ input {
 .optionBtn:hover {
   background-color: #d0f0ff;
 }
+
+#mathInput{
+  width: 200px;
+  padding: 10px;
+  margin-top: 10px;
+}
+
+#submitBtn{
+  display: block;
+  margin: 15px auto;
+  padding: 10px 20px;
+}
