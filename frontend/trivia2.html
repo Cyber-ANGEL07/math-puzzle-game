@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trivia Level 2</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Modal -->
+<div id="resultModal" class="modal hidden">
+    <div class="modal-content">
+      <h2 id="resultTitle">Round Complete!</h2>
+      <div id="stars">
+        <span class="star">★</span>
+        <span class="star">★</span>
+        <span class="star">★</span>
+      </div>
+      <p id="finalScore">Score: 0</p>
+      <div class="modal-buttons">
+        <button id="retryBtn">🔄 Retry</button>
+        <button id="homeBtn">🏠 Home</button>
+        <button id="nextBtn">➡ Next Mode</button>
+      </div>
+    </div>
+</div>
+
+<!-- Game Container -->
+<div id="questionContainer">
+  <div class="game-container">
+    <h1>🧠 Trivia Level 2</h1>
+    <p id="score">Score: 0</p>
+    <h2 id="question">Loading question...</h2>
+
+    <div class="timer-wrapper">
+      <div id="timerContainer">
+        <div id="timerBar"></div>
+      </div>
+      <p id="timer">Timer: 10s</p>
+    </div>
+
+    <div class="options">
+      <button class="optionBtn"></button>
+      <button class="optionBtn"></button>
+      <button class="optionBtn"></button>
+      <button class="optionBtn"></button>
+    </div>
+
+    <p id="feedback"></p>
+  </div>
+</div>
+
+<script src="trivia2.js"></script>
+</body>
+</html>

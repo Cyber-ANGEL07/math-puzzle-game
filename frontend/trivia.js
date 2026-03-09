@@ -50,7 +50,7 @@ async function loadTriviaQuestion() {
     `Score: ${score} | Attempts left: ${attemptsLeft}`;
 
   try {
-    const response = await fetch("http://localhost:3000/api/trivia");
+    const response = await fetch("http://localhost:3000/api/trivia?difficulty=easy");
 
     // Handle API failures gracefully
     if (!response.ok) {
@@ -338,6 +338,10 @@ function showResults() {
   for (let i = 0; i < starCount; i++) {
     stars[i].classList.add("filled");
   }
+    // ✅ UNLOCK LEVEL 2
+    if (score >= 30) {
+      localStorage.setItem("triviaLevel2Unlocked", "true");
+    }
 
   document.getElementById("resultModal").classList.remove("hidden");
 }

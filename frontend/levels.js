@@ -1,7 +1,3 @@
-// When a level button is clicked
-document.getElementById("level1Btn").addEventListener("click", () => startLevel(1));
-document.getElementById("level2Btn").addEventListener("click", () => startLevel(2));
-document.getElementById("level3Btn").addEventListener("click", () => startLevel(3));
 
 function startLevel(levelNumber) {
   // Hide the level menu
