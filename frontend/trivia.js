@@ -355,7 +355,7 @@ document.getElementById("homeBtn").onclick = () => {
 };
 
 document.getElementById("nextBtn").onclick = () => {
-  alert("Next mode coming soon!");
+  window.location.href = "trivia-levels.html";
 };
 
 window.onload = function() {
