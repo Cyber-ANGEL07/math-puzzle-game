@@ -1,22 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Math Puzzle Game</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Puzzle Game</title>
+<link rel="stylesheet" href="style.css">
 </head>
+
+<div id="resultModal" class="modal hidden">
+
+    <div class="modal-content">
+  
+      <h2 id="resultTitle">Round Complete!</h2>
+  
+      <!-- Stars -->
+      <div id="stars">
+        <span class="star">★</span>
+        <span class="star">★</span>
+        <span class="star">★</span>
+      </div>
+  
+      <p id="finalScore">Score: 0</p>
+  
+      <div class="modal-buttons">
+        <button id="retryBtn">🔄 Retry</button>
+        <button id="homeBtn">🏠 Home</button>
+        <button id="nextBtn">➡ Next Mode</button>
+      </div>
+  
+    </div>
+  
+  </div>
+
 <body>
 
-<h1>🎯 Math Puzzle Game</h1>
+<div class="game-container">
 
-<p id="score">Score: 0 | Attempts: 3</p>
+    <h1>🎯 Math Puzzle Game</h1>
 
-<h2 id="triviaQuestion">Loading trivia...</h2>
+    <p id="score">Score: 0 | Attempts: 3</p>
 
-<input type="text" id="guessInput" min="1" placeholder="Enter your guess">
-<button id="guessBtn">Guess</button>
+    <h2 id="triviaQuestion">Loading trivia...</h2>
 
-<p id="hint"></p>
+    <div class="timer-wrapper">
+        <div id="timerContainer">
+            <div id="timerBar"></div>
+        </div>
+        <p id="timer">Timer: 15s</p>
+    </div>
+
+    <input
+        type="text"
+        id="guessInput"
+        placeholder="Enter your answer..."
+        autocomplete="off"
+    >
+
+    <br>
+
+    <button id="guessBtn">Submit Answer</button>
+
+    <p id="hint"></p>
+
+    <div class="footer">
+        Trivia powered by your API 🚀
+    </div>
+
+</div>
+
+<div id="gameOverScreen" style="display:none;">
+    <h2>🏁 Game Over</h2>
+    <p id="finalScore"></p>
+    <button id="retryBtn">Retry</button>
+</div>
 
 <script src="trivia.js"></script>
+
 </body>
 </html>
