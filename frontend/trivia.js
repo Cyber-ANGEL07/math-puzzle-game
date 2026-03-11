@@ -1,11 +1,19 @@
-// ==========================
-// VARIABLES
-// ==========================
-let triviaAnswer;          // correct trivia answer
-let attempts = 3;          // max attempts per question
-let score = 0;             // player score
-let maxAttempts = 3;
-let level = 1;
+let score = 0;                  // total score
+let questionNumber = 0;         // current question number
+const TOTAL_QUESTIONS = 3;      // total questions per round
+let attemptsLeft = 3;           // attempts for current question
+let gameActive = true;          // is game running
+let triviaAnswer = "";  
+let timeLeft = 15;
+let maxTime = 15;          // seconds per question
+let timerInterval = null;   // stores setInterval
+const TIME_PER_QUESTION = 15;        // correct answer for current question
+
+function decodeHtml(html) {
+  const txt = document.createElement("textarea");
+  txt.innerHTML = html;
+  return txt.value;
+}
 
 // ==========================
 // START GAME
@@ -22,43 +30,159 @@ function nextLevel() {
 function startGame() {
   attempts = maxAttempts;
   document.getElementById("score").innerText = `Score: ${score} | Attempts left: ${attempts}`;
-  document.getElementById("hint").innerText = "";
+  document.getElementById("hint").textContent = `Category: ${decodeHtml(data.results[0].category)}`;
   document.getElementById("guessInput").value = "";
 
   loadTriviaQuestion(); // Load next trivia question
 }
 
-// ==========================
-// LOAD TRIVIA QUESTION (Math/Science)
-// ==========================
 async function loadTriviaQuestion() {
+  if (!gameActive) return;
+
+  const guessBtn = document.getElementById("guessBtn");
+  guessBtn.disabled = true; // ❌ disable button while loading
+
+  clearInterval(timerInterval);
+
+  attemptsLeft = 3;  // reset attempts for new question
+
+  document.getElementById("score").innerText =
+    `Score: ${score} | Attempts left: ${attemptsLeft}`;
+
   try {
-    // Category 17 = Science: Math
-    const response = await fetch("https://opentdb.com/api.php?amount=1&category=17&type=multiple&difficulty=easy");
+    const response = await fetch("http://localhost:3000/api/trivia");
 
-    if (!response.ok) throw new Error(`Trivia API responded with status ${response.status}`);
-
+    // Handle API failures gracefully
+    if (!response.ok) {
+      console.log("Trivia API temporary failure. Retrying...");
+      return setTimeout(loadTriviaQuestion, 2000); // retry after 2 sec
+    }
+    
     const data = await response.json();
+    
+    // Optional: also check if OpenTDB returned no results
+    if (!data.results || data.results.length === 0) {
+      console.log("Trivia API returned empty results. Retrying...");
+      return setTimeout(loadTriviaQuestion, 2000); // retry after 2 sec
+    }
 
     if (!data.results || data.results.length === 0) {
       showFeedback("Trivia question unavailable. Trying again…", false);
-      setTimeout(loadTriviaQuestion, 1000); // retry after 1 sec
+      setTimeout(loadTriviaQuestion, 1000);
       return;
     }
 
-    // ✅ Set the correct answer and display the question
     triviaAnswer = data.results[0].correct_answer;
     const question = data.results[0].question;
-    document.getElementById("triviaQuestion").innerHTML = question;
+    document.getElementById("triviaQuestion").textContent = decodeHtml(data.results[0].question);
+    document.getElementById("hint").textContent = `Category: ${data.results[0].category}`;
+    document.getElementById("guessInput").value = "";
 
-    // ✅ Show category hint immediately
-    document.getElementById("hint").innerText = `Category: ${data.results[0].category}`;
+    // Re-enable the button now that question is ready
+    guessBtn.disabled = false;
 
+    //Show the category and difficulty
+    const difficulty = data.results[0].difficulty; //easy,medium,hard
+    document.getElementById("hint").textContent = 
+        `Category: ${data.results[0].category} | Difficulty: ${difficulty}`;
+
+    //Starting the timer based on the Difficulty
+    switch (difficulty.toLowerCase()) {
+      case "easy":
+        timeLeft = 15;
+        break;
+      case "medium":
+        timeLeft = 10;
+        break;
+      case "hard":
+        timeLeft = 7;
+        break;
+      default:
+        timeLeft = 15;
+
+    }
+    updateTimerUI();
+    startTimer();
+    
   } catch (error) {
-    alert("Trivia API failed. Please try again later."); 
-    console.error(error);
+    console.error(error); // still log for debugging
+  
+      const guessBtn = document.getElementById("guessBtn");
+      
+      // Optional polish:
+      showFeedback("⏳ Loading next question… please wait", false); // friendly message
+      guessBtn.disabled = true; // prevent clicks
+  
+      setTimeout(() => {
+          loadTriviaQuestion();      // retry fetching question
+          guessBtn.disabled = false; // re-enable button after question loads
+      }, 2000);
+  }
+
+}
+
+function startTimer() {
+  clearInterval(timerInterval);
+
+  // ✅ use difficulty-based time already set
+  timeLeft = maxTime;
+
+  updateTimerUI();
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerUI();
+
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+
+      attemptsLeft--; // lose an attempt
+
+      document.getElementById("score").innerText =
+        `Score: ${score} | Attempts left: ${attemptsLeft}`;
+
+      if (attemptsLeft > 0) {
+
+        showFeedback(
+          `⏰ Time's up! Attempts left: ${attemptsLeft}`,
+          false
+        );
+
+        // ✅ restart timer for same question
+        timeLeft = maxTime;
+        startTimer();
+
+      } else {
+
+        showFeedback(
+          `⏰ Time's up! No attempts left! Correct answer: ${triviaAnswer}`,
+          false
+        );
+
+        nextOrEnd(); // move to next question
+      }
+    }
+  }, 1000);
+}
+
+function updateTimerUI() {
+
+  document.getElementById("timer").textContent =
+    `Time: ${timeLeft}s`;
+
+  const percentage = (timeLeft / maxTime) * 100;
+  const timerBar = document.getElementById("timerBar");
+
+  timerBar.style.width = percentage + "%";
+
+  // ⭐ PANIC MODE (last 5 seconds)
+  if (timeLeft <= 5) {
+    timerBar.classList.add("panic");
+  } else {
+    timerBar.classList.remove("panic");
   }
 }
+
 function generateHint(answer) {
   let hint = "";
 
@@ -74,35 +198,45 @@ function generateHint(answer) {
   return hint;
 }
 
-// ==========================
-// CHECK USER ANSWER
-// ==========================
-async function checkAnswer() {
-  const userAnswer = document.getElementById("guessInput").value.trim();
+function nextOrEnd() {
+  clearInterval(timerInterval); // stop timer
 
+  questionNumber++;
+
+  if (questionNumber >= TOTAL_QUESTIONS) {
+    showResults();
+  } else {
+    loadTriviaQuestion();
+  }
+}
+
+function checkAnswer() {
+  if (!gameActive) return;
+
+  const userAnswer = document.getElementById("guessInput").value.trim();
   if (!userAnswer) {
     alert("Please enter your answer!");
     return;
   }
 
   if (userAnswer.toLowerCase() === triviaAnswer.toLowerCase()) {
-    // Correct
-    score += 10;
-    document.getElementById("score").innerText = `Score: ${score} | Attempts left: ${attempts}`;
-    showFeedback("CORRECT!!!", true);
-    startGame(); 
+    clearInterval(timerInterval);
+    score += 10; // points per correct answer
+    showFeedback(`✅ Correct! +10 points`, true);
+    nextOrEnd();
   } else {
-    attempts--;
-    if (attempts > 0) {
-      // Show hint after first wrong attempt
-      const hintMessage = attempts === 2 ? generateHint(triviaAnswer) : "";
-      showFeedback(`❌ Wrong! Attempts left: ${attempts}\n${hintMessage}`, false);
+    attemptsLeft--;
+    if (attemptsLeft > 0) {
+      const hintMessage = attemptsLeft === 2 ? generateHint(triviaAnswer) : "";
+      showFeedback(`❌ Wrong! Attempts left: ${attemptsLeft}\n${hintMessage}`, false);
+      document.getElementById("score").innerText =
+        `Score: ${score} | Attempts left: ${attemptsLeft}`;
     } else {
-      alert(`💀 Game Over! Correct answer was: ${triviaAnswer}`);
-      score = 0;
-      startGame(); 
+      showFeedback(`💀 No attempts left! Correct answer: ${triviaAnswer}`, false);
+      nextOrEnd();
     }
   }
+
   document.getElementById("guessInput").value = "";
 }
 
@@ -118,11 +252,109 @@ function showFeedback(message, isCorrect) {
   hintEl.classList.add(isCorrect ? "correct" : "wrong");
 }
 
-// ==========================
-// EVENT LISTENERS
-// ==========================
+function handleWrongAttempt(message = "❌ Wrong answer") {
+
+  attemptsLeft--;
+
+  document.getElementById("score").textContent =
+    `Score: ${score} | Attempts: ${attemptsLeft}`;
+
+  if (attemptsLeft <= 0) {
+    endGame();   // ⭐ NEW
+    return;
+  }
+
+  alert(message);
+  startTimer();
+}
+
+function endGame() {
+  gameActive = false;
+  document.getElementById("finalScore").textContent = `Your Score: ${score}`;
+  document.getElementById("gameOverScreen").style.display = "block";
+  document.getElementById("guessBtn").disabled = true;
+  document.getElementById("guessInput").disabled = true;
+}
+document.getElementById("retryBtn").addEventListener("click", () => {
+  score = 0;
+  questionNumber = 0;
+  attemptsLeft = 3;
+  gameActive = true;
+
+  document.getElementById("gameOverScreen").style.display = "none";
+  document.getElementById("guessBtn").disabled = false;
+  document.getElementById("guessInput").disabled = false;
+  document.getElementById("score").innerText = `Score: ${score} | Attempts left: ${attemptsLeft}`;
+
+
+
+  loadTriviaQuestion();
+});
+
+document.getElementById("guessBtn").addEventListener("click", checkAnswer);
+
+function restartGame() {
+
+  score = 0;
+  attemptsLeft = 3;
+  gameActive = true;
+
+  document.getElementById("gameOverScreen").style.display = "none";
+
+  document.getElementById("guessBtn").disabled = false;
+  document.getElementById("guessInput").disabled = false;
+
+  document.getElementById("score").textContent =
+    `Score: ${score} | Attempts: ${attemptsLeft}`;
+
+  loadTriviaQuestion();
+}
+
+document.getElementById("guessBtn").addEventListener("click", () => {
+  if (!gameActive) return;
+
+  // existing logic
+});
+
+function showResults() {
+
+  clearInterval(timerInterval);
+
+  document.getElementById("finalScore").textContent =
+    `Score: ${score}`;
+
+  const stars = document.querySelectorAll(".star");
+
+  // reset stars
+  stars.forEach(star => star.classList.remove("filled"));
+
+  // ⭐ scoring logic (you can tweak)
+  let starCount = 0;
+
+  if (score >= 30) starCount = 3;
+  else if (score >= 20) starCount = 2;
+  else if (score >= 10) starCount = 1;
+
+  for (let i = 0; i < starCount; i++) {
+    stars[i].classList.add("filled");
+  }
+
+  document.getElementById("resultModal").classList.remove("hidden");
+}
+
+document.getElementById("retryBtn").onclick = () => {
+  location.reload();
+};
+
+document.getElementById("homeBtn").onclick = () => {
+  window.location.href = "index.html";
+};
+
+document.getElementById("nextBtn").onclick = () => {
+  alert("Next mode coming soon!");
+};
+
 window.onload = function() {
-  startGame();
-  document.getElementById("guessBtn").addEventListener("click", checkAnswer);
+  loadTriviaQuestion();
 };
 

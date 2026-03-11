@@ -13,6 +13,17 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
+function decodeHtml(str) {
+  if (!str) return str;
+
+  return str
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'");
+}
+
 // Test route
 app.get("/", (req, res) => {
   res.send("Math Reflex Survival Backend Running 🚀");
@@ -73,6 +84,39 @@ app.post("/register", async (req, res) => {
   }
 });
 
+const fetch = require("node-fetch"); // npm install node-fetch@2
+
+app.get("/api/trivia", async (req, res) => {
+  try {
+    // You can make this dynamic with query params later
+    const amount = req.query.amount || 1;
+    const category = req.query.category || 17; // Math/Science
+    const difficulty = req.query.difficulty || "easy";
+
+    const response = await fetch(
+      `https://opentdb.com/api.php?amount=${amount}&category=${category}&type=multiple&difficulty=${difficulty}`
+    );
+
+    if (!response.ok) {
+      return res.status(500).json({ error: "Trivia API failed" });
+    }
+
+    const data = await response.json();
+
+    // Clean HTML entities
+    data.results = data.results.map(q => ({
+      ...q,
+      question: decodeHtml(q.question),
+      category: decodeHtml(q.category),
+      correct_answer: decodeHtml(q.correct_answer),
+      incorrect_answers: q.incorrect_answers.map(ans => decodeHtml(ans))
+    }));
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Start server
 const PORT = process.env.PORT || 3000;
