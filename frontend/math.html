@@ -3,61 +3,87 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Math Puzzle Game</title>
+<title>Math Game</title>
 <link rel="stylesheet" href="style.css">
 </head>
+<body>
 
-<div id="resultModal" class="modal hidden">
+<!-- Level Selection -->
+<div class="level-page-container">
+  <h1>Math Mode</h1>
+  <h2>Select a Level</h2>
 
-    <div class="modal-content">
-  
-      <h2 id="resultTitle">Round Complete!</h2>
-  
-      <!-- Stars -->
-      <div id="stars">
-        <span class="star">★</span>
-        <span class="star">★</span>
-        <span class="star">★</span>
-      </div>
-  
-      <p id="finalScore">Score: 0</p>
-  
-      <div class="modal-buttons">
-        <button id="retryBtn">🔄 Retry</button>
-        <button id="homeBtn">🏠 Home</button>
-        <button id="nextBtn">➡ Next Mode</button>
-      </div>
-  
-    </div>
-  
+  <div class="level-container">
+    <button class="levelBtn" data-level="1">Level 1: Easy</button>
+    <button class="levelBtn" id="mathLevel2" data-level="2" disabled>Level 2: Locked 🔒</button>
+    <button class="levelBtn" id="mathLevel3" data-level="3" disabled>Level 3: Locked 🔒</button>
   </div>
 
-  <body>     
+  <a href="index.html" class="backBtn">⬅ Back</a>
+</div>
 
-<div id="gameContainer">
+<!-- Game Container -->
+<div class="game-container hidden" id="gameContainer">
+  <h1>🧮 Math Chain Game</h1>
+  <p id="score">Score: 0 | Attempts left: 3</p>
+  <h2 id="mathQuestion">Loading...</h2>
 
-<h1>🧠 Math Challenge</h1>
-
-<p id="score">Score: 0 | Attempts left: 3</p>
-
-<h2 id="mathQuestion">Loading question...</h2>
-
-<div class="timer-wrapper">
+  <div class="timer-wrapper">
     <div id="timerContainer">
-        <div id="timerBar"></div>
+      <div id="timerBar"></div>
     </div>
-    <p id="timer">Timer: 15s</p>
+    <p id="timer">Time: 15s</p>
+  </div>
+
+  <input type="number" id="mathInput" autocomplete="off">
+  <button id="submitBtn">Submit</button>
+
+  <p id="feedback"></p>
 </div>
 
-<input type="number" id="mathInput" placeholder="Enter answer">
-
-<button id="submitBtn">Submit Answer</button>
-
-<p id="feedback"></p>
-
+<!-- Result Modal -->
+<div id="resultModal" class="modal hidden">
+  <div class="modal-content">
+    <h2>Game Over!</h2>
+    <div id="stars">
+      <span class="star">★</span>
+      <span class="star">★</span>
+      <span class="star">★</span>
+    </div>
+    <p id="finalScore">Score: 0</p>
+    <div class="modal-buttons">
+      <button id="retryBtn">🔄 Retry</button>
+      <button id="homeBtn">🏠 Home</button>
+      <button id="nextBtn">➡ Next Mode</button>
+    </div>
+  </div>
 </div>
 
-<script src="math.js"></script>
+<!-- ========================== -->
+<!-- DYNAMIC SCRIPT LOADER -->
+<!-- ========================== -->
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const level = params.get("level") || "1";
+
+  // Hide level selection if level chosen
+  if (level) {
+    document.querySelector(".level-page-container").classList.add("hidden");
+    document.getElementById("gameContainer").classList.remove("hidden");
+  }
+
+  // Load correct JS
+  const script = document.createElement("script");
+
+  if (level === "1") script.src = "math.js";       // default file for level 1
+  else if (level === "2") script.src = "math2.js"; // file for level 2
+  else if (level === "3") script.src = "math3.js"; // file for level 3
+
+  script.type = "text/javascript";
+  script.onload = () => console.log(`Loaded math level ${level} successfully`);
+  script.onerror = () => alert(`Error: math level ${level} JS not found!`);
+  document.body.appendChild(script);
+</script>
 
 </body>
 </html>

@@ -116,6 +116,14 @@ button:hover {
   transition: 0.2s ease;
 }
 
+.level-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-width: 200px;
+  margin: auto;
+}
+
 .levelBtn:hover {
   background-color: #45a049;
 }
