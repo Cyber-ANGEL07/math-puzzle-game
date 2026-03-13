@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./db");
 const User = require("./models/User");
+const Progress = require("./models/Progress");
 
 console.log('MONGO_URI is:', process.env.MONGO_URI);
 
@@ -27,26 +28,6 @@ function decodeHtml(str) {
 // Test route
 app.get("/", (req, res) => {
   res.send("Math Reflex Survival Backend Running 🚀");
-});
-
-// REGISTER route
-app.post("/register", async (req, res) => {
-  try {
-    
-    console.log("BODY RECEIVED:", req.body);
-    
-    const { username, password, phone } = req.body;
-    const existingUser = await User.findOne({ username });
-    if (existingUser) return res.status(400).json({ error: "User already exists" });
-
-    const newUser = new User({ username, password, phone });
-    await newUser.save();
-
-    res.json({ message: "User registered successfully" });
-
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
 });
 
 // LOGIN route
@@ -85,6 +66,62 @@ app.post("/register", async (req, res) => {
 });
 
 const fetch = require("node-fetch"); // npm install node-fetch@2
+
+// SAVE GAME PROGRESS
+app.post("/api/progress", async (req, res) => {
+  try {
+    const { userId, mode, level, score, stars, completed } = req.body;
+
+    // check if progress already exists
+    let progress = await Progress.findOne({
+      userId,
+      mode,
+      level
+    });
+
+    if (progress) {
+      // update existing record
+      progress.score = score;
+      progress.stars = stars;
+      progress.completed = completed;
+      progress.updatedAt = Date.now();
+
+      await progress.save();
+    } else {
+      // create new record
+      progress = new Progress({
+        userId,
+        mode,
+        level,
+        score,
+        stars,
+        completed
+      });
+
+      await progress.save();
+    }
+
+    res.json({ message: "Progress saved ✅" });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET PLAYER PROGRESS (Dashboard)
+app.get("/api/progress/:userId", async (req, res) => {
+  console.log("Progress route hit:", req.params.userId);
+  try {
+    const progress = await Progress.find({
+      userId: req.params.userId
+    });
+
+    res.json(progress);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 app.get("/api/trivia", async (req, res) => {
   try {

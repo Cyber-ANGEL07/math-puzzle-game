@@ -10,6 +10,23 @@ let gameOver = false;
 let TIME_PER_QUESTION = 12;
 let timeLeft = TIME_PER_QUESTION;
 let timerInterval;
+let starCount = 0;
+
+// ----------------- SAVE PROGRESS TO BACKEND -----------------
+async function saveProgressToBackend(userId, mode, level, score, stars, completed) {
+    try {
+        const response = await fetch("http://localhost:3000/api/progress", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId, mode, level, score, stars, completed })
+        });
+
+        const data = await response.json();
+        console.log("Progress saved:", data);
+    } catch (err) {
+        console.error("Error saving progress:", err);
+    }
+}
 
 // ----------------- UTILITY -----------------
 function getNumberBasedOnDifficulty() {
@@ -131,7 +148,10 @@ function endMathGame() {
     const stars = document.querySelectorAll(".star");
     stars.forEach(s=>s.classList.remove("filled"));
     let starCount = 0;
-    if(score>=30) starCount=3; else if(score>=20) starCount=2; else if(score>=10) starCount=1;
+    if(score >= 30) starCount = 3;
+    else if(score >= 20) starCount = 2;
+    else if(score >= 10) starCount = 1;
+
     for(let i=0;i<starCount;i++) stars[i].classList.add("filled");
     document.getElementById("resultModal").classList.remove("hidden");
 }
@@ -140,18 +160,31 @@ function endMathGame() {
 document.getElementById("submitBtn").addEventListener("click", checkMathAnswer);
 document.getElementById("retryBtn").onclick = ()=> location.reload();
 document.getElementById("homeBtn").onclick = ()=> window.location.href="index.html";
-document.getElementById("nextBtn").onclick = () => {
-    // Save completion for this level if max score achieved
+document.getElementById("nextBtn").onclick = async () => {
     const params = new URLSearchParams(window.location.search);
-    const level = params.get("level") || "1";
+    const level = params.get("level") || "1"; // adjust default if needed
+    const userId = localStorage.getItem("userId", "6992dcec46556e60be825ef7");
 
-    if (score === 30) { // only unlock next level on perfect score
-        if (level === "1") localStorage.setItem("mathLevel1Completed", "true");
-        else if (level === "2") localStorage.setItem("mathLevel2Completed", "true");
-        else if (level === "3") localStorage.setItem("mathLevel3Completed", "true");
+    const completed = score === 30; // only perfect score counts
+
+    // save progress to backend
+    await saveProgressToBackend(
+        userId,
+        "math",
+        parseInt(level),
+        score,
+        starCount,
+        completed
+    );
+
+    // localStorage unlock
+    if(completed){
+        if(level === "1") localStorage.setItem("mathLevel1Completed", "true");
+        else if(level === "2") localStorage.setItem("mathLevel2Completed", "true");
+        else if(level === "3") localStorage.setItem("mathLevel3Completed", "true");
     }
 
-    // Go back to level selection page
+    // go back to level selection
     window.location.href = "math-levels.html";
 };
 
