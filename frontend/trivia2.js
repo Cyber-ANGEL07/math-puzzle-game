@@ -2,234 +2,226 @@
 // VARIABLES
 // ==========================
 let score = 0;
-let currentQuestion = "";
-let mathAnswer = 0;
-let attemptHistory = [];           // Stores all attempts
-let currentAttempt = 1;            // Tracks 1st, 2nd, 3rd attempt
-const MAX_ATTEMPTS = 3;
-let attemptsLeft = MAX_ATTEMPTS;
-let chainStarted = false;
-let gameOver = false;
-
-let TIME_PER_QUESTION = 15;
-let timeLeft = TIME_PER_QUESTION;
-let timerInterval = null;
+let questionNumber = 0;
+const TOTAL_QUESTIONS = 4;       // total questions in level 2
+let attemptsLeft = 4;             // ✅ Step 1: 5 attempts
+let correctAnswer = "";
+let timeLeft = 10;                // seconds per question
+const maxTime = 10;               
+let timerInterval;
 
 // ==========================
-// UTILITY FUNCTIONS
+// LOAD QUESTION
 // ==========================
-function getNumberBasedOnDifficulty() {
-    // You can tweak for Medium/Hard
-    return Math.floor(Math.random() * 10) + 1;
-}
+async function loadQuestion() {
+  clearInterval(timerInterval);
 
-function shuffle(arr) { arr.sort(() => Math.random() - 0.5); }
+  document.getElementById("question").textContent = "Loading question...";
+document.getElementById("feedback").textContent = "";
 
-// ==========================
-// UI FUNCTIONS
-// ==========================
-function showFeedback(message, correct = true) {
-    const fb = document.getElementById("feedback");
-    fb.textContent = message;
-    fb.style.color = correct ? "green" : "red";
-}
+  document.getElementById("score").textContent = `Score: ${score} | Attempts: ${attemptsLeft}`;
 
-function updateUI() {
-    document.getElementById("mathQuestion").textContent = currentQuestion;
-    document.getElementById("score").textContent = `Score: ${score} | Attempts left: ${attemptsLeft}`;
-}
+  try {
+    const response = await fetch("http://localhost:3000/api/trivia?difficulty=medium&amount=1&type=multiple");
+    const data = await response.json();
 
-function updateTimerUI() {
-    const timerBar = document.getElementById("timerBar");
-    const percent = (timeLeft / TIME_PER_QUESTION) * 100;
-    timerBar.style.width = percent + "%";
-    document.getElementById("timer").textContent = `Time: ${timeLeft}s`;
-    timerBar.classList.toggle("panic", timeLeft <= 5);
-}
-
-// ==========================
-// QUESTION GENERATORS
-// ==========================
-function generateFirstQuestion() {
-    const num1 = getNumberBasedOnDifficulty();
-    const num2 = getNumberBasedOnDifficulty();
-    const operators = ["+", "-", "*", "/"];
-    const operator = operators[Math.floor(Math.random() * operators.length)];
-
-    if (operator === "+") {
-        mathAnswer = num1 + num2;
-        currentQuestion = `${num1} + ${num2} = ?`;
-    } else if (operator === "-") {
-        if (num1 < num2) return generateFirstQuestion();
-        mathAnswer = num1 - num2;
-        currentQuestion = `${num1} - ${num2} = ?`;
-    } else if (operator === "*") {
-        mathAnswer = num1 * num2;
-        currentQuestion = `${num1} × ${num2} = ?`;
-    } else if (operator === "/") {
-        const divisor = getNumberBasedOnDifficulty();
-        const quotient = getNumberBasedOnDifficulty();
-        mathAnswer = quotient;
-        currentQuestion = `${divisor * quotient} ÷ ${divisor} = ?`;
+// ✅ SAFETY CHECK
+    if (!data.results || data.results.length === 0) {
+        console.error("Trivia API returned no results:", data);
+        showFeedback("Trivia question unavailable. Try refreshing.", false);
+        return;  // stop execution so JS doesn't crash
     }
 
-    updateUI();
+    const q = data.results[0];  // safe now
+    document.getElementById("question").textContent = decodeHtml(q.question);
+
+    correctAnswer = q.correct_answer;
+
+    const options = [...q.incorrect_answers, q.correct_answer];
+    shuffle(options);
+
+    const buttons = document.querySelectorAll(".optionBtn");
+    buttons.forEach((btn, index) => {
+      btn.textContent = decodeHtml(options[index]);
+      btn.disabled = false;
+      btn.onclick = () => checkAnswer(options[index]);
+    });
+
+    startTimer();
+  } catch (error) {
+    console.error("Trivia API failed:", error);   // ✅ log real error
+    showFeedback("Trivia API failed. Please check your server.", false);
+  }
 }
 
-function generateChainQuestion() {
-    const lastCorrect = attemptHistory.filter(a => a.wasCorrect).pop();
-    if (!lastCorrect) return generateFirstQuestion();
+// ==========================
+// CHECK ANSWER
+// ==========================
+function checkAnswer(selected) {
 
-    const num = getNumberBasedOnDifficulty();
-    const operators = ["+", "-", "*", "/"];
-    const operator = operators[Math.floor(Math.random() * operators.length)];
+  clearInterval(timerInterval); // stop timer on click
 
-    switch(operator) {
-        case "+": mathAnswer = lastCorrect.correctAnswer + num; currentQuestion = `? + ${num} = ?`; break;
-        case "-": mathAnswer = lastCorrect.correctAnswer - num; if(mathAnswer < 0) return generateChainQuestion(); currentQuestion = `? - ${num} = ?`; break;
-        case "*": mathAnswer = lastCorrect.correctAnswer * num; currentQuestion = `? × ${num} = ?`; break;
-        case "/": const divisor = getNumberBasedOnDifficulty(); const dividend = lastCorrect.correctAnswer * divisor; mathAnswer = lastCorrect.correctAnswer; currentQuestion = `${dividend} ÷ ${divisor} = ?`; break;
-    }
+  const buttons = document.querySelectorAll(".optionBtn");
+  buttons.forEach(btn => btn.disabled = true); // ✅ Step 3: disable buttons
 
-    updateUI();
+  if(selected === correctAnswer){
+    score += 10; // ✅ add score
+    showFeedback("✅ Correct!", true);
+  } else {
+    attemptsLeft--; // ✅ remove an attempt for wrong answer
+    showFeedback(`❌ Wrong! Correct: ${correctAnswer}`, false);
+  }
+
+  // ✅ Step 1: update score & attempts UI after answer
+  document.getElementById("score").textContent = `Score: ${score} | Attempts: ${attemptsLeft}`;
+
+  questionNumber++;
+
+  // Check if game is over
+  if(questionNumber >= TOTAL_QUESTIONS || attemptsLeft <= 0){
+    setTimeout(showResults, 1500); // show modal after 1.5s
+  } else {
+    setTimeout(loadQuestion, 1500); // load next question
+  }
 }
 
 // ==========================
 // TIMER
 // ==========================
 function startTimer() {
-    clearInterval(timerInterval);
-    timeLeft = TIME_PER_QUESTION;
+
+  timeLeft = maxTime;
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
     updateTimerUI();
 
-    timerInterval = setInterval(() => {
-        timeLeft--;
-        updateTimerUI();
+    if(timeLeft <= 0){
 
-        if (timeLeft <= 0) {
-            clearInterval(timerInterval);
-            attemptsLeft--;
-            showFeedback(`⏰ Time's up! Attempts left: ${attemptsLeft}`, false);
-            handleNextQuestion(false);
-        }
-    }, 1000);
-}
+      clearInterval(timerInterval);
+      attemptsLeft--; // ✅ lose attempt if time runs out
 
-// ==========================
-// LOAD QUESTIONS
-// ==========================
-function loadMathQuestion() {
-    document.getElementById("mathInput").value = "";
+      // ✅ Step 1: update score & attempts UI after timeout
+      document.getElementById("score").textContent = `Score: ${score} | Attempts: ${attemptsLeft}`;
 
-    if (chainStarted && attemptHistory.some(a => a.wasCorrect)) {
-        generateChainQuestion();
-    } else {
-        generateFirstQuestion();
+      showFeedback(`⏰ Time's up! Correct: ${correctAnswer}`, false);
+
+      const buttons = document.querySelectorAll(".optionBtn");
+      buttons.forEach(btn => btn.disabled = true);
+
+      questionNumber++;
+
+      if(questionNumber >= TOTAL_QUESTIONS || attemptsLeft <= 0){
+        setTimeout(showResults, 1500);
+      } else {
+        setTimeout(loadQuestion, 1500);
+      }
     }
-
-    startTimer();
+  }, 1000);
 }
 
 // ==========================
-// CHECK ANSWER
+// UPDATE TIMER BAR
 // ==========================
-function checkMathAnswer() {
-    if (gameOver) return;
+function updateTimerUI() {
+  document.getElementById("timer").textContent = `Time: ${timeLeft}s`;
 
-    const userAnswer = parseInt(document.getElementById("mathInput").value);
-    const isCorrect = userAnswer === mathAnswer;
+  const percent = (timeLeft / maxTime) * 100;
+  document.getElementById("timerBar").style.width = percent + "%";
 
-    attemptHistory.push({
-        attemptNumber: currentAttempt,
-        correctAnswer: mathAnswer,
-        wasCorrect: isCorrect
-    });
-
-    if (isCorrect) {
-        showFeedback("✅ Correct!", true);
-        chainStarted = true;
-    } else {
-        showFeedback(`❌ Wrong! Attempts left: ${attemptsLeft}`, false);
-        chainStarted = false;
-    }
-
-    attemptsLeft--;
-    
-    if (currentAttempt >= MAX_ATTEMPTS || attemptsLeft <= 0) {
-        currentAttempt++;
-        endMathGame();
-        return;
-    }
-
-    currentAttempt++;
-    setTimeout(loadMathQuestion, 1000);
+  if(timeLeft <= 5) {
+    document.getElementById("timerBar").classList.add("panic");
+  } else {
+    document.getElementById("timerBar").classList.remove("panic");
+  }
 }
 
 // ==========================
-// CALCULATE SCORE
+// FEEDBACK
 // ==========================
-function calculateFinalScore() {
-    const correctAttempts = attemptHistory.filter(a => a.wasCorrect).length;
-    if (correctAttempts === 3) return 30;
-    if (correctAttempts === 2) return 20;
-    if (correctAttempts === 1) return 10;
-    return 0;
+function showFeedback(msg, correct) {
+  const fb = document.getElementById("feedback");
+  fb.textContent = msg;
+  fb.style.color = correct ? "green" : "red";
 }
 
 // ==========================
-// END GAME / MODAL
+// END OF GAME / MODAL
 // ==========================
-function endMathGame() {
-    gameOver = true;
-    clearInterval(timerInterval);
+function showResults() {
 
-    score = calculateFinalScore();
-    document.getElementById("finalScore").textContent = `Score: ${score}`;
+  clearInterval(timerInterval); // stop any running timer
 
-    const stars = document.querySelectorAll(".star");
-    stars.forEach(star => star.classList.remove("filled"));
+  const buttons = document.querySelectorAll(".optionBtn");
+  buttons.forEach(btn => btn.disabled = true); // disable all buttons
 
-    let starCount = 0;
-    if(score >= 30) starCount = 3;
-    else if(score >= 20) starCount = 2;
-    else if(score >= 10) starCount = 1;
+  document.getElementById("questionContainer").style.display = "block"; 
+// add a wrapper div around question + options in HTML
 
-    for(let i = 0; i < starCount; i++) stars[i].classList.add("filled");
+  document.getElementById("finalScore").textContent = `Score: ${score}`;
 
-    document.getElementById("resultModal").classList.remove("hidden");
+  document.getElementById("resultModal").classList.remove("hidden");
+
+  const stars = document.querySelectorAll(".star");
+  stars.forEach(star => star.classList.remove("filled"));
+
+  let starCount = 0;
+  if(score >= 30) starCount = 3;
+  else if(score >= 20) starCount = 2;
+  else if(score >= 10) starCount = 1;
+
+  for(let i=0; i<starCount; i++){
+    stars[i].classList.add("filled");
+  }
+
+  // Unlock next level if score is high
+  if(score >= 30){
+    localStorage.setItem("triviaLevel3Unlocked", "true");
+  }
+
+  // ✅ show modal
+  document.getElementById("resultModal").classList.remove("hidden");
 }
 
 // ==========================
-// HANDLE NEXT QUESTION AFTER TIMEOUT
+// UTILITIES
 // ==========================
-function handleNextQuestion(correct) {
-    clearInterval(timerInterval);
-    currentAttempt++;
-
-    if (attemptsLeft <= 0 || currentAttempt > MAX_ATTEMPTS) {
-        endMathGame();
-    } else {
-        setTimeout(loadMathQuestion, 1000);
-    }
-}
+function shuffle(arr){ arr.sort(() => Math.random() - 0.5); }
+function decodeHtml(html){ const txt = document.createElement("textarea"); txt.innerHTML = html; return txt.value; }
 
 // ==========================
-// BUTTON EVENTS
+// BUTTONS ON MODAL
 // ==========================
-document.getElementById("submitBtn").addEventListener("click", checkMathAnswer);
-document.getElementById("retryBtn").onclick = () => location.reload();
-document.getElementById("homeBtn").onclick = () => window.location.href = "index.html";
-document.getElementById("nextBtn").onclick = () => alert("Next mode coming soon!");
+document.getElementById("retryBtn").onclick = () => {
+  document.getElementById("resultModal").classList.add("hidden"); // hide modal
+  document.getElementById("questionContainer").style.display = "block"; // show question area
+  score = 0;
+  questionNumber = 0;
+  attemptsLeft = 4;
+  loadQuestion();
+};
+
+document.getElementById("homeBtn").onclick = () => { window.location.href="trivia-levels.html"; };
+document.getElementById("nextBtn").onclick = () => {
+  // Save score for current level
+  localStorage.setItem("triviaLevel2Score", score);
+
+  // Unlock Level 2 if score threshold met
+  if (score >= 30) {
+      localStorage.setItem("triviaLevel3Unlocked", "true");
+  }
+
+  // Redirect to trivia levels page
+  window.location.href = "trivia-levels.html";
+};
 
 // ==========================
 // START GAME
 // ==========================
 window.onload = () => {
-    attemptHistory = [];
-    currentAttempt = 1;
-    chainStarted = false;
-    attemptsLeft = MAX_ATTEMPTS;
-    gameOver = false;
-    score = 0;
-    loadMathQuestion();
+
+  document.getElementById("resultModal").classList.add("hidden");
+  document.getElementById("questionContainer").style.display = "block";
+  loadQuestion();
+
 };
