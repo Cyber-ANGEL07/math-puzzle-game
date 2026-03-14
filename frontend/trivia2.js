@@ -204,14 +204,17 @@ document.getElementById("retryBtn").onclick = () => {
 document.getElementById("homeBtn").onclick = () => { window.location.href="trivia-levels.html"; };
 document.getElementById("nextBtn").onclick = () => {
   // Save score for current level
-  localStorage.setItem("triviaLevel2Score", score);
+  localStorage.setItem("triviaLevel2Score", score); 
 
-  // Unlock Level 2 if score threshold met
+  // Unlock Level 3 if player scored >=30
   if (score >= 30) {
       localStorage.setItem("triviaLevel3Unlocked", "true");
   }
 
-  // Redirect to trivia levels page
+  // Level 2 is already unlocked from Level 1, keep it
+  localStorage.setItem("triviaLevel2Unlocked", "true");
+
+  // Redirect to Levels page
   window.location.href = "trivia-levels.html";
 };
 

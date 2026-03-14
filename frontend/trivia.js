@@ -356,15 +356,16 @@ document.getElementById("homeBtn").onclick = () => {
 
 document.getElementById("nextBtn").onclick = () => {
   // Save score for current level
-  localStorage.setItem("triviaLevel1Score", score);
+  localStorage.setItem("triviaLevel1Score", score); 
 
-  // Unlock Level 2 if score threshold met
+  // Unlock Level 2 if player scored >=30
   if (score >= 30) {
-      localStorage.setItem("triviaLevel2Unlocked", "true");
+    localStorage.setItem("triviaLevel2Unlocked", "true");
+      // Redirect to Levels page
+    
+    window.location.href = "trivia-levels.html";
   }
 
-  // Redirect to trivia levels page
-  window.location.href = "trivia-levels.html";
 };
 
 window.onload = function() {
