@@ -219,7 +219,30 @@ function endMathGame() {
     for (let i = 0; i < starCount; i++) stars[i].classList.add("filled");
 
     document.getElementById("resultModal").classList.remove("hidden");
+
+      // Call it at the end of endMathGame()
+    sendMathScore();
 }
+
+async function sendMathScore() {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
+  
+    try {
+      await fetch("http://localhost:3000/api/saveScore/math", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          score,
+          level: 1 // replace with current math level
+        })
+      });
+      console.log("Math score sent to server:", score);
+    } catch (err) {
+      console.error("Failed to send math score:", err);
+    }
+  }
 
 // ==========================
 // BUTTONS

@@ -20,6 +20,7 @@ body {
 
 h1 {
   margin-bottom: 10px;
+  text-align: center;
 }
 
 .username {
@@ -147,11 +148,6 @@ button:hover {
   width: 420px;
   text-align: center;
   box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-}
-
-h1 {
-  margin-top: 0;
-  font-size: 28px;
 }
 
 #score {
@@ -320,6 +316,16 @@ input {
 
 }
 
+/* style.css */
+.password-feedback {
+  font-size: 0.9rem;
+  color: red;
+  margin-top: 5px;
+}
+.password-feedback.strong {
+  color: green;
+}
+
 /* Container to center everything */
 .level-page-container {
   display: flex;
@@ -391,3 +397,100 @@ input {
   }
 
 }
+
+/* =========================
+   Leaderboard Styles
+   ========================= */
+
+   body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f7f9fc;
+    margin: 20px;
+    color: #333;
+  }
+  
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  /* Game select dropdown */
+  label, #gameSelect {
+    display: inline-block;
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+  
+  #gameSelect {
+    margin-left: 10px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  /* Container for all leaderboard cards */
+  #leaderboardContainer {
+    display: flex;
+    flex-direction: column; /* vertical stacking */
+    gap: 10px;             /* spacing between cards */
+    margin-top: 20px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  /* Individual leaderboard card */
+  .leaderboard-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 15px 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* rank left, username center, score right */
+    transition: transform 0.2s;
+  }
+  
+  .leaderboard-card:hover {
+    transform: scale(1.02);
+  }
+  
+  /* Rank */
+  .leaderboard-card .rank {
+    font-weight: bold;
+    color: #4a90e2;
+    width: 40px;
+    text-align: left;
+  }
+  
+  /* Username */
+  .leaderboard-card .username {
+    flex: 1;
+    text-align: left;
+    margin-left: 15px;
+    font-size: 16px;
+  }
+  
+  /* Score */
+  .leaderboard-card .score {
+    font-weight: bold;
+    color: #27ae60;
+    width: 50px;
+    text-align: right;
+    font-size: 16px;
+  }
+  
+  /* Responsive: shrink cards on small screens */
+  @media (max-width: 600px) {
+    #leaderboardContainer {
+      max-width: 95%;
+    }
+    .leaderboard-card {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 5px;
+    }
+    .leaderboard-card .score {
+      text-align: left;
+    }
+  }

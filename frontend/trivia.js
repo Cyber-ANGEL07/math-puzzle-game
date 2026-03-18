@@ -344,6 +344,29 @@ function showResults() {
     }
 
   document.getElementById("resultModal").classList.remove("hidden");
+
+  // Call it at the end of showResults()
+sendTriviaScore();
+}
+
+async function sendTriviaScore() {
+  const userId = localStorage.getItem("userId");
+  if (!userId) return;
+
+  try {
+    await fetch("http://localhost:3000/api/saveScore/trivia", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId,
+        score,
+        level: 1 // replace with actual level if using multiple
+      })
+    });
+    console.log("Trivia score sent to server:", score);
+  } catch (err) {
+    console.error("Failed to send trivia score:", err);
+  }
 }
 
 document.getElementById("retryBtn").onclick = () => {
