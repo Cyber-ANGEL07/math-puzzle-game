@@ -1,33 +1,96 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Math Levels</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRT NIGHTS · Math Levels</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 </head>
-
 <body>
 
-<div class="level-page-container">
+  <!-- Background music (optional – can be removed if not used) -->
+  <audio id="bgm" loop preload="auto">
+    <source src="assets/audio/bgm.mp3" type="audio/mpeg">
+  </audio>
 
-  <h1>Math Mode</h1>
-  <h2>Select a Level</h2>
+  <!-- Button sound for all clicks -->
+  <audio id="buttonSound" preload="auto">
+    <source src="assets/audio/click_button.mp3" type="audio/mpeg">
+  </audio>
 
-  <div class="level-container">
-    <!-- Pass level parameter in URL -->
-    <a href="math.html?level=1" class="levelBtn">Level 1: Easy</a>
-    <button id="mathLevel2" class="levelBtn" disabled>
-      Level 2: Locked 🔒
-    </button>
-    <button id="mathLevel3" class="levelBtn" disabled>
-      Level 3: Locked 🔒
-    </button>
+  <!-- Mute button (same style as main page) -->
+  <button id="muteBtn" onclick="toggleMute()">🔊</button>
+
+  <!-- Retro background canvas (optional, but adds consistency) -->
+  <canvas id="bgCanvas"></canvas>
+
+  <div class="level-page-container">
+    <h1>◈ MATH MODE ◈</h1>
+    <h2 class="sub-header">SELECT LEVEL</h2>
+
+    <div class="level-container">
+      <!-- Level 1 link – will get sound via JS -->
+      <a href="math.html?level=1" id="mathLevel1" class="levelBtn">Level 1: Easy</a>
+      <button id="mathLevel2" class="levelBtn" disabled>Level 2: Locked 🔒</button>
+      <button id="mathLevel3" class="levelBtn" disabled>Level 3: Locked 🔒</button>
+    </div>
+
+    <!-- Back link with sound -->
+    <a href="index.html" id="backBtn" class="backBtn">« RETURN TO TERMINAL</a>
   </div>
 
-  <a href="index.html" class="backBtn">⬅ Back</a>
+  <!-- Retro background animation (optional but matches other pages) -->
+  <style>
+    /* Simple canvas setup – copy from math.html if desired, but minimal version works */
+    #bgCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      pointer-events: none;
+    }
+  </style>
 
-</div>
+  <script>
+    // ==================== AUDIO SETUP ====================
+    const bgm = document.getElementById("bgm");
+    const buttonSound = document.getElementById("buttonSound");
+    const muteBtn = document.getElementById("muteBtn");
 
-<script src="math-levels.js"></script>
+    // Mute state from localStorage (shared with other pages)
+    let isMuted = localStorage.getItem("bgmMuted") === "true";
 
+    function setMuted(muted) {
+      isMuted = muted;
+      if (bgm) bgm.muted = muted;
+      if (buttonSound) buttonSound.muted = muted;
+      if (muteBtn) muteBtn.textContent = muted ? "🔇" : "🔊";
+      localStorage.setItem("bgmMuted", muted);
+    }
+    setMuted(isMuted);
+
+    function toggleMute() {
+      setMuted(!isMuted);
+    }
+
+    function playSound(sound) {
+      if (!isMuted && sound) {
+        sound.currentTime = 0;
+        sound.play().catch(() => {});
+      }
+    }
+
+    // Optional: start BGM if it exists and not muted
+    if (bgm && !isMuted) {
+      bgm.volume = 0.2;
+      bgm.play().catch(() => {});
+    }
+  </script>
+
+  <!-- Your main level script -->
+  <script src="math-levels.js"></script>
 </body>
 </html>

@@ -3,23 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trivia & Math Game</title>
+  <title>CRT NIGHTS · Select Mode</title>
   <link rel="stylesheet" href="style.css">
+  <!-- Retro fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 </head>
 <body>
 
-  <!-- Level Menu -->
-  <div id="levelMenu">
-    <h1>Trivia & Math Game</h1>
-    <h2>Select a Level</h2>
-  
-    <a href="trivia-levels.html" class="levelBtn">Level 1: Trivia 🟢</a>
-    <a href="math.html" class="levelBtn">Level 2: Math 🟡</a>
-  
+  <!-- Background music -->
+  <audio id="bgm" loop preload="auto">
+    <source src="assets/audio/bgm.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Button click sound -->
+  <audio id="clickSound" preload="auto">
+    <source src="assets/audio/click.mp3" type="audio/mpeg">
+  </audio>
+
+  <audio id="buttonSound" preload="auto">
+    <source src="assets/audio/click_button.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Mute button -->
+  <button id="muteBtn" onclick="toggleMute()">🔊</button>
+
+  <!-- Retro CRT background canvas -->
+  <canvas id="bgCanvas"></canvas>
+
+  <div class="level-page-container">
+    <h1>◈ SELECT GAME MODE ◈</h1>
+    <h2 class="sub-header">CHOOSE YOUR CHALLENGE</h2>
+
+    <div class="level-container">
+      <button id="triviaBtn" class="levelBtn">📚 TRIVIA MODE</button>
+      <button id="mathBtn" class="levelBtn">➗ MATH MODE</button>
+    </div>
+
+    <a href="index.html" class="backBtn">« RETURN TO TERMINAL</a>
   </div>
 
-  <!-- Link your game.js here -->
-  <script src="game.js"></script>
-
+  <!-- External JavaScript -->
+  <script src="levels.js"></script>
 </body>
 </html>

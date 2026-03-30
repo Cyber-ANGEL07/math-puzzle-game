@@ -2,43 +2,268 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Math Reflex Survival - Menu</title>
+  <title>Brain vs Speed: Let’s Go!</title>
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+  <!-- ADD THESE FONTS for retro theme -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 </head>
 <body>
 
+ <!-- Background Music -->
+<audio id="bgm" loop preload="auto">
+  <source src="assets/audio/bgm.mp3" type="audio/mpeg">
+  Your browser does not support the audio element.
+</audio>
+
+<!-- Button Click Sound -->
+<audio id="clickSound" preload="auto">
+  <source src="assets/audio/click_button.mp3an" type="audio/mpeg">
+</audio>
+
+<!-- Weird sound for all buttons -->
+<audio id="buttonSound" preload="auto">
+  <source src="assets/audio/click_button.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Mute Button -->
+<button id="muteBtn" onclick="toggleMute()">🔊</button>
+<button id="leaderboardBtn" class="leaderboard-icon" onclick="location.href='leaderboard.html'">🏆</button>
+  <!-- Background canvas for retro effect -->
+  <canvas id="bgCanvas"></canvas>
+
+  <!-- Menu container -->
   <div class="menu-container">
-    <h1>🍌 Math Reflex Survival</h1>
-    <p>Welcome, <span id="playerName" class="username"></span>!</p>
+    <h1> Brain vs Speed: Let’s Go!</h1>
+    <p id="greeting">Yo <span id="playerName" class="username"></span>!  Time  to  get  those  neurons  moving!</p>
 
-    <button onclick="logout()">Logout</button>
-
-
-    <button class="play-btn" onclick="startGame()">Play Game</button>
-    <button class="daily-btn" onclick="dailyChallenge()">Daily Challenge</button>
-    <button class="logout-btn" onclick="logout()">Logout</button>
+    <div class="button-container">
+      <button class="play-btn" onclick="startGame()">Start Game</button>
+      <button class="daily-btn" onclick="dailyChallenge()">Daily Challenge</button>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
   </div>
 
   <script>
-    // 🔐 Check if user is logged in
+    // ==================== USER CHECK ====================
     const userId = localStorage.getItem("userId");
     const username = localStorage.getItem("username");
-
-    if (!userId) {
-      window.location.href = "auth.html";
-    }
-
-    // Display username
+  
+    if (!userId) window.location.href = "auth.html";
+  
     document.getElementById("playerName").textContent = username;
-
-    function startGame() {
-      window.location.href = "levels.html";
+  
+    // ==================== GREETING ANIMATION ====================
+    const greeting = document.getElementById("greeting");
+    greeting.innerHTML = greeting.textContent.split('').map(char => {
+      if (char === ' ') return ' ';
+      return `<span class="letter">${char}</span>`;
+    }).join('');
+  
+    document.addEventListener('mousemove', e => {
+      const letters = document.querySelectorAll('.letter');
+      letters.forEach((letter, index) => {
+        const offsetX = (e.clientX - window.innerWidth/2) * 0.01 * (index % 5);
+        const offsetY = (e.clientY - window.innerHeight/2) * 0.01 * (index % 5);
+        letter.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+  
+        clearTimeout(letter.resetTimeout);
+        letter.resetTimeout = setTimeout(() => {
+          letter.style.transform = `translate(0, 0)`;
+        }, 1500);
+      });
+    });
+  
+    // ==================== AUDIO SETUP ====================
+    const bgm = document.getElementById("bgm");
+    const clickSound = document.getElementById("clickSound");
+    const buttonSound = document.getElementById("buttonSound");
+    const muteBtn = document.getElementById("muteBtn");
+  
+    // Load mute state from localStorage (default: unmuted)
+    let isMuted = localStorage.getItem("bgmMuted") === "true";
+  
+    function setMuted(muted) {
+      isMuted = muted;
+      bgm.muted = muted;
+      clickSound.muted = muted;
+      buttonSound.muted = muted;
+      muteBtn.textContent = muted ? "🔇" : "🔊";
+      localStorage.setItem("bgmMuted", muted);
     }
-
+  
+    // Initial mute state
+    setMuted(isMuted);
+  
+    function toggleMute() {
+      setMuted(!isMuted);
+    }
+  
+    // Safely play a sound (for UI feedback)
+    function playSound(sound) {
+      if (!isMuted && sound) {
+        sound.currentTime = 0;
+        sound.play().catch(e => console.log("Sound play failed:", e));
+      }
+    }
+  
+    // Play click sound for buttons (used by onclick)
+    function playClick() {
+      playSound(clickSound);
+    }
+  
+    // Play button sound (for navigation)
+    function playButtonSound() {
+      playSound(buttonSound);
+    }
+  
+    // Attempt to start BGM (with retry on user interaction)
+    let bgmStarted = false;
+  
+    function startBGM() {
+      if (bgmStarted) return;
+      bgm.volume = 0.2;
+      bgm.play()
+        .then(() => {
+          bgmStarted = true;
+          console.log("BGM started");
+        })
+        .catch(err => {
+          console.log("BGM autoplay failed:", err);
+          // Will retry on first user click
+        });
+    }
+  
+    // Retry BGM on any user click if not started
+    function retryBGMOnInteraction() {
+      if (!bgmStarted) {
+        startBGM();
+        // Remove listener after first click to avoid multiple attempts
+        document.removeEventListener('click', retryBGMOnInteraction);
+        document.removeEventListener('keydown', retryBGMOnInteraction);
+        document.removeEventListener('touchstart', retryBGMOnInteraction);
+      }
+    }
+  
+    // Start BGM on page load
+    window.onload = () => {
+      startBGM();
+      // If autoplay fails, listen for user interaction
+      document.addEventListener('click', retryBGMOnInteraction);
+      document.addEventListener('keydown', retryBGMOnInteraction);
+      document.addEventListener('touchstart', retryBGMOnInteraction);
+  
+      // Initialize retro oscilloscope
+      initOscilloscope();
+    };
+  
+    // ==================== RETRO OSCILLOSCOPE ====================
+    const canvas = document.getElementById("bgCanvas");
+    const ctx = canvas.getContext("2d");
+    let time = 0;
+  
+    function initOscilloscope() {
+      resizeCanvas();
+      animate();
+    }
+  
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+  
+    window.addEventListener('resize', resizeCanvas);
+  
+    function animate() {
+      time += 0.05;
+  
+      // Fade to black slowly
+      ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+      drawGrid();
+      drawWaveform();
+      drawScanningDot();
+  
+      requestAnimationFrame(animate);
+    }
+  
+    function drawGrid() {
+      ctx.strokeStyle = 'rgba(255, 176, 0, 0.1)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < canvas.width; x += 50) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.strokeStyle = 'rgba(255, 176, 0, 0.05)';
+        ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += 50) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.strokeStyle = 'rgba(255, 176, 0, 0.05)';
+        ctx.stroke();
+      }
+    }
+  
+    function drawWaveform() {
+      ctx.beginPath();
+      ctx.strokeStyle = '#ffb000';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = '#ffb000';
+      ctx.shadowBlur = 10;
+  
+      const centerY = canvas.height / 2;
+  
+      for (let x = 0; x < canvas.width; x += 5) {
+        const y = centerY + 
+          Math.sin(x * 0.02 + time) * 30 + 
+          Math.sin(x * 0.01 + time * 2) * 15 +
+          Math.cos(x * 0.03 + time * 1.3) * 10;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+  
+    function drawScanningDot() {
+      const x = (time * 50) % canvas.width;
+      const centerY = canvas.height / 2;
+      const y = centerY + 
+        Math.sin(x * 0.02 + time) * 30 + 
+        Math.sin(x * 0.01 + time * 2) * 15 +
+        Math.cos(x * 0.03 + time * 1.3) * 10;
+  
+      ctx.shadowColor = '#ffb000';
+      ctx.shadowBlur = 20;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fill();
+  
+      ctx.shadowBlur = 10;
+      ctx.fillStyle = '#ffb000';
+      ctx.beginPath();
+      ctx.arc(x, y, 2, 0, Math.PI * 2);
+      ctx.fill();
+  
+      ctx.shadowBlur = 0;
+    }
+  
+    // ==================== NAVIGATION FUNCTIONS ====================
+    function startGame() {
+      playButtonSound();
+      setTimeout(() => {
+        window.location.href = "levels.html";
+      }, 500);
+    }
+  
     function dailyChallenge() {
+      playButtonSound();
       const today = new Date().toDateString();
       const lastPlayed = localStorage.getItem("dailyChallengeDate");
-
       if (lastPlayed === today) {
         alert("You already played today's challenge!");
       } else {
@@ -47,12 +272,14 @@
         window.location.href = "levels.html";
       }
     }
-
+  
     function logout() {
-      localStorage.clear();
-      window.location.href = "auth.html";
+      playButtonSound();
+      setTimeout(() => {
+        localStorage.clear();
+        window.location.href = "auth.html";
+      }, 500);
     }
   </script>
-
 </body>
 </html>

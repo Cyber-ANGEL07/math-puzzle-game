@@ -1,3 +1,4 @@
+
 let score = 0;
 let previousAnswer = null;
 let currentQuestion = "";

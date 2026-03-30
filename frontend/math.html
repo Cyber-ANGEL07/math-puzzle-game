@@ -1,89 +1,342 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Math Game</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRT NIGHTS · MATH TERMINAL</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+
 </head>
 <body>
 
-<!-- Level Selection -->
-<div class="level-page-container">
-  <h1>Math Mode</h1>
-  <h2>Select a Level</h2>
+  <!-- Audio elements -->
+  <audio id="bgm" loop preload="auto">
+    <source src="assets/audio/bgm.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="clickSound" preload="auto">
+    <source src="assets/audio/click.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="buttonSound" preload="auto">
+    <source src="assets/audio/click_button.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="correctBeep" preload="auto">
+    <source src="assets/audio/correct.wav" type="audio/mpeg">
+  </audio>
+  <audio id="wrongBeep" preload="auto">
+    <source src="assets/audio/wrong.wav" type="audio/mpeg">
+  </audio>
+  <audio id="starSound" preload="auto">
+    <source src="assets/audio/star.wav" type="audio/mpeg">
+  </audio>
 
-  <div class="level-container">
-    <button class="levelBtn" data-level="1">Level 1: Easy</button>
-    <button class="levelBtn" id="mathLevel2" data-level="2" disabled>Level 2: Locked 🔒</button>
-    <button class="levelBtn" id="mathLevel3" data-level="3" disabled>Level 3: Locked 🔒</button>
+  <button id="muteBtn" onclick="toggleMute()">🔊</button>
+  <canvas id="bgCanvas"></canvas>
+  <div class="circuit-overlay"></div>
+  <div class="static-overlay" id="staticOverlay"></div>
+  <div id="flashOverlay" class="flash-overlay"></div>
+
+  <!-- Level selection (hidden if level param present) -->
+  <div class="level-page-container">
+    <h1>◈ MATH TERMINAL ◈</h1>
+    <h2 class="sub-header">SELECT LEVEL</h2>
+    <div class="level-container">
+      <button class="levelBtn" data-level="1">Level 1: EASY</button>
+      <button class="levelBtn" id="mathLevel2" data-level="2" disabled>Level 2: LOCKED 🔒</button>
+      <button class="levelBtn" id="mathLevel3" data-level="3" disabled>Level 3: LOCKED 🔒</button>
+    </div>
+    <a href="index.html" class="backBtn">« RETURN TO TERMINAL</a>
   </div>
 
-  <a href="index.html" class="backBtn">⬅ Back</a>
-</div>
+  <!-- Game Container -->
+  <div class="game-container hidden" id="gameContainer">
+    <button id="gameBackBtn" class="game-back-btn">← BACK</button>
+    <h1>🧮 MATH CHAIN</h1>
 
-<!-- Game Container -->
-<div class="game-container hidden" id="gameContainer">
-  <h1>🧮 Math Chain Game</h1>
-  <p id="score">Score: 0 | Attempts left: 3</p>
-  <h2 id="mathQuestion">Loading...</h2>
-
-  <div class="timer-wrapper">
-    <div id="timerContainer">
-      <div id="timerBar"></div>
+    <!-- Stats row -->
+    <div class="stats-row">
+      <div class="stat-box">
+        <span class="stat-label">REGISTER</span>
+        <span id="scoreValue" class="stat-value">0</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-label">TRIES</span>
+        <span id="attemptsValue" class="stat-value">3</span>
+      </div>
     </div>
-    <p id="timer">Time: 15s</p>
+
+    <h2 id="mathQuestion">Loading...</h2>
+
+    <!-- Circular timer -->
+    <div class="timer-circle">
+      <svg viewBox="0 0 100 100">
+        <circle class="timer-bg" cx="50" cy="50" r="40"></circle>
+        <circle class="timer-progress" cx="50" cy="50" r="40" style="stroke-dashoffset: 0;"></circle>
+      </svg>
+      <span class="timer-text">15s</span>
+    </div>
+
+    <div class="input-wrapper">
+      <input type="number" id="mathInput" autocomplete="off" placeholder="ENTER NUMBER">
+    </div>
+    <button id="submitBtn" class="retro-btn">SUBMIT</button>
+    <p id="feedback"></p>
   </div>
 
-  <input type="number" id="mathInput" autocomplete="off">
-  <button id="submitBtn">Submit</button>
-
-  <p id="feedback"></p>
-</div>
-
-<!-- Result Modal -->
-<div id="resultModal" class="modal hidden">
-  <div class="modal-content">
-    <h2>Game Over!</h2>
-    <div id="stars">
-      <span class="star">★</span>
-      <span class="star">★</span>
-      <span class="star">★</span>
-    </div>
-    <p id="finalScore">Score: 0</p>
-    <div class="modal-buttons">
-      <button id="retryBtn">🔄 Retry</button>
-      <button id="homeBtn">🏠 Home</button>
-      <button id="nextBtn">➡ Next Mode</button>
+  <!-- Result Modal -->
+  <div id="resultModal" class="modal hidden">
+    <div class="modal-content">
+      <h2>GAME OVER</h2>
+      <div id="stars">
+        <span class="star">★</span>
+        <span class="star">★</span>
+        <span class="star">★</span>
+      </div>
+      <p id="finalScore">Score: 0</p>
+      <div class="modal-buttons">
+        <button id="retryBtn" class="retro-btn">🔄 RETRY</button>
+        <button id="homeBtn" class="retro-btn">🏠 HOME</button>
+        <button id="nextBtn" class="retro-btn">➡ NEXT</button>
+        <button id="leaderboardBtn" class="retro-btn">🏆 LEADERBOARD</button>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- ========================== -->
-<!-- DYNAMIC SCRIPT LOADER -->
-<!-- ========================== -->
-<script>
-  const params = new URLSearchParams(window.location.search);
-  const level = params.get("level") || "1";
+  <!-- Global retro setup script -->
+  <script>
+    // Audio elements
+    const bgm = document.getElementById("bgm");
+    const clickSound = document.getElementById("clickSound");
+    const buttonSound = document.getElementById("buttonSound");
+    const correctBeep = document.getElementById("correctBeep");
+    const wrongBeep = document.getElementById("wrongBeep");
+    const starSound = document.getElementById("starSound");
+    const muteBtn = document.getElementById("muteBtn");
 
-  // Hide level selection if level chosen
-  if (level) {
-    document.querySelector(".level-page-container").classList.add("hidden");
-    document.getElementById("gameContainer").classList.remove("hidden");
-  }
+    let isMuted = localStorage.getItem("bgmMuted") === "true";
 
-  // Load correct JS
-  const script = document.createElement("script");
+    function setMuted(muted) {
+      isMuted = muted;
+      bgm.muted = muted;
+      clickSound.muted = muted;
+      buttonSound.muted = muted;
+      correctBeep.muted = muted;
+      wrongBeep.muted = muted;
+      starSound.muted = muted;
+      muteBtn.textContent = muted ? "🔇" : "🔊";
+      localStorage.setItem("bgmMuted", muted);
+    }
+    setMuted(isMuted);
 
-  if (level === "1") script.src = "math.js";       // default file for level 1
-  else if (level === "2") script.src = "math2.js"; // file for level 2
-  else if (level === "3") script.src = "math3.js"; // file for level 3
+    function toggleMute() {
+      setMuted(!isMuted);
+    }
 
-  script.type = "text/javascript";
-  script.onload = () => console.log(`Loaded math level ${level} successfully`);
-  script.onerror = () => alert(`Error: math level ${level} JS not found!`);
-  document.body.appendChild(script);
-</script>
+    function playSound(sound) {
+      if (!isMuted && sound) {
+        sound.currentTime = 0;
+        sound.play().catch(() => {});
+      }
+    }
 
+    // BGM start
+    let bgmStarted = false;
+    function startBGM() {
+      if (bgmStarted) return;
+      bgm.volume = 0.2;
+      bgm.play()
+        .then(() => bgmStarted = true)
+        .catch(() => {
+          document.addEventListener('click', function retry() {
+            startBGM();
+            document.removeEventListener('click', retry);
+          });
+        });
+    }
+
+    // Flash overlay
+    function flashScreen(type) {
+      const overlay = document.getElementById('flashOverlay');
+      overlay.className = 'flash-overlay flash-' + type;
+      overlay.classList.add('flash');
+      setTimeout(() => {
+        overlay.classList.remove('flash');
+      }, 100);
+    }
+
+    // Static overlay control
+    function setStatic(active) {
+      const overlay = document.getElementById("staticOverlay");
+      if (overlay) overlay.classList.toggle("active", active);
+    }
+
+    // ========== OSCILLOSCOPE BACKGROUND ==========
+    const canvas = document.getElementById("bgCanvas");
+    const ctx = canvas.getContext("2d");
+    let time = 0;
+    let symbols = [];
+
+    function initOscilloscope() {
+      resizeCanvas();
+      for (let i = 0; i < 15; i++) {
+        symbols.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          char: ['+', '−', '×', '÷', '=', '√'][Math.floor(Math.random() * 6)],
+          size: 20 + Math.random() * 20,
+          speed: 0.1 + Math.random() * 0.5,
+          opacity: 0.1 + Math.random() * 0.2
+        });
+      }
+      animate();
+    }
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    function animate() {
+      time += 0.05;
+      ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      drawGrid();
+      drawWaveform();
+      drawScanningDot();
+      drawFloatingSymbols();
+      requestAnimationFrame(animate);
+    }
+
+    function drawGrid() {
+      ctx.strokeStyle = 'rgba(255, 176, 0, 0.1)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < canvas.width; x += 50) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.strokeStyle = 'rgba(255, 176, 0, 0.05)';
+        ctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += 50) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.strokeStyle = 'rgba(255, 176, 0, 0.05)';
+        ctx.stroke();
+      }
+    }
+
+    function drawWaveform() {
+      ctx.beginPath();
+      ctx.strokeStyle = '#ffb000';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = '#ffb000';
+      ctx.shadowBlur = 10;
+      const centerY = canvas.height / 2;
+      for (let x = 0; x < canvas.width; x += 5) {
+        const y = centerY + 
+          Math.sin(x * 0.02 + time) * 30 + 
+          Math.sin(x * 0.01 + time * 2) * 15 +
+          Math.cos(x * 0.03 + time * 1.3) * 10;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+
+    function drawScanningDot() {
+      const x = (time * 50) % canvas.width;
+      const centerY = canvas.height / 2;
+      const y = centerY + 
+        Math.sin(x * 0.02 + time) * 30 + 
+        Math.sin(x * 0.01 + time * 2) * 15 +
+        Math.cos(x * 0.03 + time * 1.3) * 10;
+
+      ctx.shadowColor = '#ffb000';
+      ctx.shadowBlur = 20;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.shadowBlur = 10;
+      ctx.fillStyle = '#ffb000';
+      ctx.beginPath();
+      ctx.arc(x, y, 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    function drawFloatingSymbols() {
+      symbols.forEach(s => {
+        s.y += s.speed;
+        if (s.y > canvas.height) {
+          s.y = -s.size;
+          s.x = Math.random() * canvas.width;
+        }
+        ctx.font = `${s.size}px 'VT323'`;
+        ctx.fillStyle = `rgba(255, 176, 0, ${s.opacity})`;
+        ctx.fillText(s.char, s.x, s.y);
+      });
+    }
+
+    // Start everything
+    document.addEventListener("DOMContentLoaded", () => {
+      startBGM();
+      initOscilloscope();
+
+      // Level selection buttons
+      document.querySelectorAll(".levelBtn[data-level]").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          playSound(buttonSound);
+          const level = btn.getAttribute("data-level");
+          setTimeout(() => {
+            window.location.href = `math.html?level=${level}`;
+          }, 300);
+        });
+      });
+
+      // Sound for game buttons
+      document.getElementById("submitBtn")?.addEventListener("click", () => playSound(clickSound));
+      document.getElementById("retryBtn")?.addEventListener("click", () => playSound(buttonSound));
+      document.getElementById("homeBtn")?.addEventListener("click", () => playSound(buttonSound));
+      document.getElementById("nextBtn")?.addEventListener("click", () => playSound(buttonSound));
+      document.getElementById("leaderboardBtn")?.addEventListener("click", () => playSound(buttonSound));
+
+      // Back button handler
+      const backBtn = document.getElementById("gameBackBtn");
+      if (backBtn) {
+        backBtn.addEventListener("click", () => {
+          playSound(buttonSound);
+          setTimeout(() => {
+            window.location.href = "math-levels.html";
+          }, 300);
+        });
+      }
+    });
+  </script>
+
+  <!-- Dynamic level loader -->
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const level = params.get("level") || "1";
+
+    if (level) {
+      document.querySelector(".level-page-container").classList.add("hidden");
+      document.getElementById("gameContainer").classList.remove("hidden");
+    }
+
+    const script = document.createElement("script");
+    if (level === "1") script.src = "math.js";
+    else if (level === "2") script.src = "math2.js";
+    else if (level === "3") script.src = "math3.js";
+    script.type = "text/javascript";
+    script.onload = () => console.log(`Loaded math level ${level}`);
+    script.onerror = () => alert(`Error: math level ${level} JS not found!`);
+    document.body.appendChild(script);
+  </script>
 </body>
 </html>

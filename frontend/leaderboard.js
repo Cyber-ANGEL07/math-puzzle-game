@@ -1,14 +1,17 @@
 const gameSelect = document.getElementById("gameSelect");
 const container = document.getElementById("leaderboardContainer");
 
-// Load leaderboard
 async function loadLeaderboard(game) {
   try {
     const response = await fetch(`http://localhost:3000/api/leaderboard/${game}?limit=10`);
     const data = await response.json();
 
-    // Clear previous entries
     container.innerHTML = "";
+
+    if (!data.length) {
+      container.innerHTML = "<p style='color:#ffb000; text-align:center'>⏳ No scores yet. Play a game!</p>";
+      return;
+    }
 
     data.forEach((entry, idx) => {
       const card = document.createElement("div");
@@ -22,23 +25,27 @@ async function loadLeaderboard(game) {
 
       card.innerHTML = `
         <div class="rank ${rankClass}">${idx + 1}</div>
-        <div class="username">${entry.username}</div>
+        <div class="username">${escapeHtml(entry.username)}</div>
         <div class="score">${entry.score}</div>
       `;
 
       container.appendChild(card);
     });
-
   } catch (err) {
     console.error("Failed to load leaderboard:", err);
-    container.innerHTML = "<p style='color:red'>Failed to load leaderboard.</p>";
+    container.innerHTML = "<p style='color:#ff3300; text-align:center'>⚠️ FAILED TO LOAD. TRY AGAIN.</p>";
   }
 }
 
-// Load default leaderboard
-loadLeaderboard(gameSelect.value);
+// Simple XSS prevention
+function escapeHtml(str) {
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
+}
 
-// Change leaderboard when selecting a game
-gameSelect.addEventListener("change", () => {
-  loadLeaderboard(gameSelect.value);
-});
+loadLeaderboard(gameSelect.value);
+gameSelect.addEventListener("change", () => loadLeaderboard(gameSelect.value));

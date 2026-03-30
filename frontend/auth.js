@@ -1,9 +1,5 @@
 const API_URL = "http://localhost:3000";
 
-function goToRegister() {
-    window.location.href = "register.html";
-  }
-
 async function register() {
   const username = document.getElementById("username").value;
   const password = document.getElementById("password").value;

@@ -1,80 +1,253 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Math Puzzle Game</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>CRT NIGHTS · TRIVIA TERMINAL</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Timer bar custom styling (ensure it works) */
+    .timer-wrapper {
+      margin: 20px 0;
+    }
+    #timerContainer {
+      width: 100%;
+      height: 20px;
+      background: #1a1a1a;
+      border: 2px solid #cc8800;
+      margin: 10px 0;
+      box-shadow: inset 0 0 10px #000;
+    }
+    #timerBar {
+      height: 100%;
+      width: 0%;
+      background: #ffb000;
+      transition: width 1s linear;
+      box-shadow: 0 0 5px #ffb000;
+    }
+    #timerBar.panic {
+      background: #f00;
+      box-shadow: 0 0 10px #f00;
+    }
+    #timer {
+      font-family: 'VT323', monospace;
+      font-size: 22px;
+      color: #ffb000;
+      text-align: center;
+    }
+    .hint-text {
+      font-size: 20px;
+      color: #ffcc66;
+      margin-top: 15px;
+    }
+    .feedback-message {
+      font-size: 20px;
+      margin-top: 15px;
+      min-height: 40px;
+    }
+    .feedback-message.correct {
+      color: #0f0;
+    }
+    .feedback-message.wrong {
+      color: #f00;
+    }
+    /* Back button - match math page style */
+    .game-back-btn {
+      position: relative;
+      display: inline-block;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 10px;
+      padding: 6px 8px;
+      background: #ffb000;
+      color: #0a0a0a;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 3px 0 #5a3e00;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.1s ease;
+      margin-bottom: 15px;
+      margin-left: 0;
+      width: auto;
+    }
+    .game-back-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #5a3e00;
+    }
+    .game-back-btn:hover {
+      background: #ffcc33;
+      box-shadow: 0 3px 0 #7a5800, 0 0 8px #ffb000;
+    }
+  </style>
 </head>
+<body>
 
-<div id="resultModal" class="modal hidden">
+  <!-- Audio elements -->
+  <audio id="bgm" loop preload="auto"><source src="assets/audio/bgm.mp3" type="audio/mpeg"></audio>
+  <audio id="clickSound" preload="auto"><source src="assets/audio/click.mp3" type="audio/mpeg"></audio>
+  <audio id="buttonSound" preload="auto"><source src="assets/audio/click_button.mp3" type="audio/mpeg"></audio>
+  <audio id="correctBeep" preload="auto"><source src="assets/audio/correct.wav" type="audio/mpeg"></audio>
+  <audio id="wrongBeep" preload="auto"><source src="assets/audio/wrong.wav" type="audio/mpeg"></audio>
+  <audio id="starSound" preload="auto"><source src="assets/audio/star.wav" type="audio/mpeg"></audio>
 
+  <button id="muteBtn" onclick="toggleMute()">🔊</button>
+  <canvas id="bgCanvas"></canvas>
+  <div class="circuit-overlay"></div>
+  <div class="static-overlay" id="staticOverlay"></div>
+  <div id="flashOverlay" class="flash-overlay"></div>
+
+  <!-- Game Container -->
+<div class="game-container" id="gameContainer">
+  <button id="gameBackBtn" class="game-back-btn">← BACK TO LEVELS</button>
+  <h1>🎮 TRIVIA CHAIN</h1>
+
+  <!-- Stats row -->
+  <div class="stats-row">
+    <div class="stat-box"><span class="stat-label">REGISTER</span><span id="scoreValue" class="stat-value">0</span></div>
+    <div class="stat-box"><span class="stat-label">TRIES</span><span id="attemptsValue" class="stat-value">3</span></div>
+  </div>
+
+  <!-- Difficulty badge (will be updated by JS) -->
+  <div id="difficultyBadge" class="difficulty-badge">EASY</div>
+
+  <!-- Question area -->
+  <h2 id="triviaQuestion">Loading...</h2>
+
+  <!-- Circular timer (same as math) -->
+  <div class="timer-circle">
+    <svg viewBox="0 0 100 100">
+      <circle class="timer-bg" cx="50" cy="50" r="40"></circle>
+      <circle class="timer-progress" cx="50" cy="50" r="40" style="stroke-dashoffset: 0;"></circle>
+    </svg>
+    <span class="timer-text">15s</span>
+  </div>
+
+  <!-- Input & button -->
+  <div class="input-wrapper">
+    <input type="text" id="guessInput" autocomplete="off" placeholder="ENTER ANSWER">
+  </div>
+  <button id="guessBtn" class="retro-btn">SUBMIT</button>
+
+  <!-- Feedback & hint (hint appears only when needed) -->
+  <p id="feedback" class="feedback-message"></p>
+  <p id="hint" class="hint-text"></p>
+</div>
+
+  <!-- Result Modal -->
+  <div id="resultModal" class="modal hidden">
     <div class="modal-content">
-  
-      <h2 id="resultTitle">Round Complete!</h2>
-  
-      <!-- Stars -->
+      <h2>ROUND COMPLETE</h2>
       <div id="stars">
         <span class="star">★</span>
         <span class="star">★</span>
         <span class="star">★</span>
       </div>
-  
       <p id="finalScore">Score: 0</p>
-  
       <div class="modal-buttons">
-        <button id="retryBtn">🔄 Retry</button>
-        <button id="homeBtn">🏠 Home</button>
-        <button id="nextBtn">➡ Next Mode</button>
+        <button id="retryBtn" class="retro-btn">🔄 RETRY</button>
+        <button id="homeBtn" class="retro-btn">🏠 HOME</button>
+        <button id="nextBtn" class="retro-btn">➡ NEXT</button>
+        <button id="leaderboardBtn" class="retro-btn">🏆 LEADERBOARD</button>
       </div>
-  
     </div>
-  
   </div>
 
-<body>
+  <script>
+    // ========== GLOBAL AUDIO & BACKGROUND ==========
+    const bgm = document.getElementById("bgm");
+    const clickSound = document.getElementById("clickSound");
+    const buttonSound = document.getElementById("buttonSound");
+    const correctBeep = document.getElementById("correctBeep");
+    const wrongBeep = document.getElementById("wrongBeep");
+    const starSound = document.getElementById("starSound");
+    const muteBtn = document.getElementById("muteBtn");
+    let isMuted = localStorage.getItem("bgmMuted") === "true";
 
-<div class="game-container">
+    function setMuted(muted) {
+      isMuted = muted;
+      bgm.muted = muted;
+      clickSound.muted = muted;
+      buttonSound.muted = muted;
+      correctBeep.muted = muted;
+      wrongBeep.muted = muted;
+      starSound.muted = muted;
+      muteBtn.textContent = muted ? "🔇" : "🔊";
+      localStorage.setItem("bgmMuted", muted);
+    }
+    setMuted(isMuted);
+    window.toggleMute = () => setMuted(!isMuted);
+    window.playSound = (sound) => { if (!isMuted && sound) { sound.currentTime = 0; sound.play().catch(()=>{}); } };
 
-    <h1>🎯 Math Puzzle Game</h1>
+    let bgmStarted = false;
+    function startBGM() {
+      if (bgmStarted) return;
+      bgm.volume = 0.2;
+      bgm.play().then(()=>bgmStarted=true).catch(()=>{ document.addEventListener('click', function retry() { startBGM(); document.removeEventListener('click', retry); }); });
+    }
 
-    <p id="score">Score: 0 | Attempts: 3</p>
+    function flashScreen(type) {
+      const overlay = document.getElementById('flashOverlay');
+      overlay.className = `flash-overlay flash-${type}`;
+      overlay.classList.add('flash');
+      setTimeout(()=> overlay.classList.remove('flash'), 100);
+    }
+    function setStatic(active) {
+      const overlay = document.getElementById("staticOverlay");
+      if(overlay) overlay.classList.toggle("active", active);
+    }
 
-    <h2 id="triviaQuestion">Loading trivia...</h2>
+    // ========== OSCILLOSCOPE BACKGROUND ==========
+    const canvas = document.getElementById("bgCanvas");
+    const ctx = canvas.getContext("2d");
+    let time = 0;
+    let symbols = [];
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resizeCanvas);
+    function initOscilloscope() {
+      resizeCanvas();
+      for(let i=0;i<15;i++) symbols.push({ x:Math.random()*canvas.width, y:Math.random()*canvas.height, char:['+','−','×','÷','=','√','?','!','?','★'][Math.floor(Math.random()*10)], size:20+Math.random()*20, speed:0.1+Math.random()*0.5, opacity:0.1+Math.random()*0.2 });
+      animate();
+    }
+    function animate() {
+      time+=0.05;
+      ctx.fillStyle='rgba(10,10,10,0.1)';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.strokeStyle='rgba(255,176,0,0.05)';
+      for(let x=0;x<canvas.width;x+=50){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke(); }
+      for(let y=0;y<canvas.height;y+=50){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke(); }
+      ctx.beginPath();
+      ctx.strokeStyle='#ffb000';
+      ctx.lineWidth=2;
+      ctx.shadowBlur=10;
+      const centerY=canvas.height/2;
+      for(let x=0;x<canvas.width;x+=5){ const y=centerY+Math.sin(x*0.02+time)*30+Math.sin(x*0.01+time*2)*15+Math.cos(x*0.03+time*1.3)*10; if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+      ctx.stroke();
+      const dotX=(time*50)%canvas.width;
+      const dotY=centerY+Math.sin(dotX*0.02+time)*30+Math.sin(dotX*0.01+time*2)*15+Math.cos(dotX*0.03+time*1.3)*10;
+      ctx.fillStyle='#fff';
+      ctx.shadowBlur=20;
+      ctx.beginPath(); ctx.arc(dotX,dotY,4,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#ffb000';
+      ctx.beginPath(); ctx.arc(dotX,dotY,2,0,Math.PI*2); ctx.fill();
+      ctx.shadowBlur=0;
+      symbols.forEach(s=>{ s.y+=s.speed; if(s.y>canvas.height){ s.y=-s.size; s.x=Math.random()*canvas.width; } ctx.font=`${s.size}px 'VT323'`; ctx.fillStyle=`rgba(255,176,0,${s.opacity})`; ctx.fillText(s.char,s.x,s.y); });
+      requestAnimationFrame(animate);
+    }
 
-    <div class="timer-wrapper">
-        <div id="timerContainer">
-            <div id="timerBar"></div>
-        </div>
-        <p id="timer">Timer: 15s</p>
-    </div>
+    // Back button navigation
+    document.getElementById("gameBackBtn").addEventListener("click", (e) => {
+      e.preventDefault();
+      playSound(buttonSound);
+      window.location.href = "trivia-levels.html";
+    });
 
-    <input
-        type="text"
-        id="guessInput"
-        placeholder="Enter your answer..."
-        autocomplete="off"
-    >
+    startBGM();
+    initOscilloscope();
+  </script>
 
-    <br>
-
-    <button id="guessBtn">Submit Answer</button>
-
-    <p id="hint"></p>
-
-    <div class="footer">
-        Trivia powered by your API 🚀
-    </div>
-
-</div>
-
-<div id="gameOverScreen" style="display:none;">
-    <h2>🏁 Game Over</h2>
-    <p id="finalScore"></p>
-    <button id="retryBtn">Retry</button>
-</div>
-
-<script src="trivia.js"></script>
-
+  <!-- Trivia game logic -->
+  <script src="trivia.js"></script>
 </body>
 </html>
