@@ -24,10 +24,13 @@ async function loadLeaderboard(game) {
       else if (idx === 2) rankClass = "rank-3";
 
       card.innerHTML = `
-        <div class="rank ${rankClass}">${idx + 1}</div>
-        <div class="username">${escapeHtml(entry.username)}</div>
-        <div class="score">${entry.score}</div>
-      `;
+      <div class="rank ${rankClass}">${idx + 1}</div>
+      <div class="username">${escapeHtml(entry.username)}</div>
+      <div class="score">
+  ⭐ ${entry.score}
+  <span class="total-score"> | Σ ${entry.totalScore ?? entry.score}</span>
+</div>
+    `;
 
       container.appendChild(card);
     });

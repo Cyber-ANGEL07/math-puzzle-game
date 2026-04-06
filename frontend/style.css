@@ -648,6 +648,14 @@ input:focus {
   box-shadow: 0 4px 0 #7a5800, 0 0 10px #ffb000;
 }
 
+.total-score {
+  font-family: 'VT323', monospace;
+  font-size: 1rem;
+  color: #ffd966;
+  margin-left: 8px;
+  opacity: 0.9;
+}
+
 /* Responsive adjustments for smaller screens */
 @media (max-width: 600px) {
   #leaderboardBtn {

@@ -363,7 +363,9 @@
           card.innerHTML = `
             <div class="rank ${rankClass}">${idx + 1}</div>
             <div class="username">${escapeHtml(entry.username)}</div>
-            <div class="score">${entry.score}</div>
+            <div class="score">
+  ${entry.score} <span style="font-size:0.8rem; color:#aaa;">(Total: ${entry.totalScore})</span>
+</div>
           `;
           container.appendChild(card);
         });

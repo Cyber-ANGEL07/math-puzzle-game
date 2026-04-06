@@ -112,8 +112,12 @@ app.post("/api/saveScore/:game", async (req, res) => {
 
     if (game === "trivia") {
       user.triviaScores.push({ level, score });
+      // Compute totalScore for all trivia attempts
+      user.triviaTotalScore = user.triviaScores.reduce((acc, s) => acc + s.score, 0);
     } else if (game === "math") {
       user.mathScores.push({ level, score });
+      // Compute totalScore for all math attempts
+      user.mathTotalScore = user.mathScores.reduce((acc, s) => acc + s.score, 0);
     } else {
       return res.status(400).json({ error: "Invalid game type" });
     }
@@ -134,31 +138,59 @@ app.post("/api/saveScore/:game", async (req, res) => {
 // ==========================
 // GET LEADERBOARD
 // ==========================
+// ==========================
+// GET LEADERBOARD
+// ==========================
 app.get("/api/leaderboard/:game", async (req, res) => {
   try {
-    const { game } = req.params; // "trivia" or "math"
-    const limit = parseInt(req.query.limit) || 10; // top N users
+    const { game } = req.params;
+    const limit = parseInt(req.query.limit) || 10;
 
-    if (!["trivia", "math"].includes(game))
+    console.log("Leaderboard requested for:", game);
+
+    if (!["trivia", "math"].includes(game)) {
       return res.status(400).json({ error: "Invalid game type" });
+    }
 
-    // Fetch all users with their scores for the given game
-    const users = await User.find({}, { username: 1, [game + "Scores"]: 1 });
+    // fetch ALL user data
+    const users = await User.find({});
 
-    // Compute highest score per user
-    const leaderboard = users.map(u => {
-      const scores = u[game + "Scores"];
-      const maxScore = scores.length ? Math.max(...scores.map(s => s.score)) : 0;
-      return { username: u.username, score: maxScore };
+    console.log("Users found:", users.length);
+
+    const leaderboard = users.map(user => {
+
+      const scores =
+        game === "trivia" ? user.triviaScores : user.mathScores;
+
+      const maxScore =
+        scores && scores.length
+          ? Math.max(...scores.map(s => s.score))
+          : 0;
+
+      const totalScore =
+        game === "trivia"
+          ? user.triviaTotalScore || 0
+          : user.mathTotalScore || 0;
+
+      console.log(
+        user.username,
+        "max:", maxScore,
+        "total:", totalScore
+      );
+
+      return {
+        username: user.username,
+        score: maxScore,
+        totalScore: totalScore
+      };
     });
 
-    // Sort descending by score
     leaderboard.sort((a, b) => b.score - a.score);
 
-    // Return top N
     res.json(leaderboard.slice(0, limit));
+
   } catch (error) {
-    console.error(error);
+    console.error("Leaderboard error:", error);
     res.status(500).json({ error: error.message });
   }
 });

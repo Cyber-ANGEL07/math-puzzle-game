@@ -14,13 +14,16 @@ const userSchema = new mongoose.Schema({
             date: { type: Date, default: Date.now }
         }
     ],
+    triviaTotalScore : { type: Number, default: 0 },
+
     mathScores: [
         {
             level: { type: Number, required: true },
             score: { type: Number, required: true },
             date: { type: Date, default: Date.now }
         }
-    ]
+    ], 
+    mathTotalScore: { type: Number, default: 0 },
 });
 
 module.exports = mongoose.model("User", userSchema);
