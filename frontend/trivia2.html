@@ -7,36 +7,114 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
-    /* Additional styles for multiple‑choice buttons */
-    .options {
+    /* Override styles to make everything fit on one screen */
+    .game-container {
+      width: 500px;
+      max-width: 90vw;
+      padding: 65px 15px 15px !important; /* top space for timer */
+      margin: 0 auto;
+      position: relative;
+      overflow: visible;
+      max-height: 90vh;
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      margin: 20px 0;
+      justify-content: center;
+    }
+
+    /* Timer circle – ensure it's fully inside the container */
+    .timer-circle {
+      position: absolute;
+      top: 12px;
+      right: 15px;
+      width: 70px;
+      height: 70px;
+      z-index: 20;
+    }
+    .timer-text {
+      font-size: 20px;
+    }
+
+    /* Reduce spacing between elements */
+    h1 {
+      margin-bottom: 15px !important;
+      font-size: 1.6rem;
+    }
+    .stats-row {
+      gap: 20px;
+      margin: 8px 0 !important;
+    }
+    .stat-box {
+      padding: 5px 12px;
+      min-width: 80px;
+    }
+    .stat-value {
+      font-size: 28px;
+    }
+    .stat-label {
+      font-size: 10px;
+    }
+    .difficulty-badge {
+      margin: 5px auto !important;
+      padding: 4px 10px;
+      font-size: 11px;
+    }
+    #question {
+      font-size: 24px;
+      padding: 10px;
+      margin-bottom: 10px;
+      min-height: auto;
+    }
+    .options {
+      gap: 6px;
+      margin: 10px 0;
     }
     .optionBtn {
-      font-family: 'VT323', monospace;
-      font-size: 24px;
-      padding: 12px;
-      background: #0f0f0f;
-      border: 2px solid #cc8800;
-      color: #ffb000;
-      cursor: pointer;
-      text-align: left;
-      transition: all 0.2s;
+      font-size: 20px;
+      padding: 8px;
     }
-    .optionBtn:hover:not(:disabled) {
-      background: rgba(255, 176, 0, 0.2);
-      transform: translateX(5px);
-      border-color: #ffb000;
-    }
-    .optionBtn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+    .feedback-message {
+      margin: 5px 0;
+      font-size: 18px;
     }
     .game-back-btn {
-      margin-bottom: 15px;
-      
+  width: 35%;
+  margin: 0 auto 10px auto;
+  display: block;
+  text-align: center;
+}
+    /* Ensure no vertical overflow on body */
+    body {
+      overflow: hidden;
+    }
+    /* Responsive for very small screens */
+    @media (max-width: 550px) {
+      .game-container {
+        padding: 60px 10px 10px !important;
+      }
+      .timer-circle {
+        width: 60px;
+        height: 60px;
+        top: 8px;
+        right: 10px;
+      }
+      .timer-text {
+        font-size: 16px;
+      }
+      h1 {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+      }
+      #question {
+        font-size: 20px;
+        padding: 8px;
+      }
+      .optionBtn {
+        font-size: 16px;
+        padding: 6px;
+      }
+      .stat-value {
+        font-size: 24px;
+      }
     }
   </style>
 </head>
@@ -61,19 +139,15 @@
     <button id="gameBackBtn" class="game-back-btn">← BACK TO LEVELS</button>
     <h1>🧠 TRIVIA LEVEL 2</h1>
 
-    <!-- Stats row (score & attempts) -->
     <div class="stats-row">
       <div class="stat-box"><span class="stat-label">REGISTER</span><span id="scoreValue" class="stat-value">0</span></div>
       <div class="stat-box"><span class="stat-label">TRIES</span><span id="attemptsValue" class="stat-value">4</span></div>
     </div>
 
-    <!-- Difficulty badge -->
     <div id="difficultyBadge" class="difficulty-badge medium">MEDIUM</div>
 
-    <!-- Question area -->
     <h2 id="question">Loading...</h2>
 
-    <!-- Circular timer -->
     <div class="timer-circle">
       <svg viewBox="0 0 100 100">
         <circle class="timer-bg" cx="50" cy="50" r="40"></circle>
@@ -82,7 +156,6 @@
       <span class="timer-text">10s</span>
     </div>
 
-    <!-- Multiple choice options -->
     <div class="options">
       <button class="optionBtn"></button>
       <button class="optionBtn"></button>
@@ -113,7 +186,7 @@
   </div>
 
   <script>
-    // ========== GLOBAL AUDIO & BACKGROUND (same as level 1) ==========
+    // ========== GLOBAL AUDIO & BACKGROUND ==========
     const bgm = document.getElementById("bgm");
     const clickSound = document.getElementById("clickSound");
     const buttonSound = document.getElementById("buttonSound");

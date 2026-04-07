@@ -35,6 +35,31 @@ passwordInput.addEventListener("input", () => {
   }
 });
 
+// Phone number validation (9 or 10 digits)
+const phoneInput = document.getElementById("phone");
+const phoneFeedback = document.getElementById("phoneFeedback");
+
+function isValidPhone(phone) {
+  const phoneRegex = /^\d{9,10}$/; // exactly 9 or 10 digits
+  return phoneRegex.test(phone);
+}
+
+phoneInput.addEventListener("input", () => {
+  const phone = phoneInput.value.trim();
+  if (!phone) {
+    phoneFeedback.textContent = "";
+    phoneFeedback.classList.remove("strong");
+    return;
+  }
+  if (isValidPhone(phone)) {
+    phoneFeedback.textContent = "Valid phone number ✅";
+    phoneFeedback.classList.add("strong");
+  } else {
+    phoneFeedback.textContent = "Phone number must be 9 or 10 digits (numbers only)";
+    phoneFeedback.classList.remove("strong");
+  }
+});
+
 async function register() {
   const username = document.getElementById("username").value.trim();
   const password = document.getElementById("password").value.trim();
@@ -45,9 +70,13 @@ async function register() {
     return;
   }
 
-  if (!checkPasswordStrength(password)) {
-    passwordFeedback.textContent = 
-      "Password does not meet requirements!";
+  if (!isStrongPassword(password)) {
+    passwordFeedback.textContent = "Password does not meet requirements!";
+    return;
+  }
+
+  if (!isValidPhone(phone)) {
+    phoneFeedback.textContent = "Phone number must be 9 or 10 digits!";
     return;
   }
 
@@ -58,8 +87,8 @@ async function register() {
   });
 
   const data = await res.json();
-  document.getElementById("authMessage").textContent =
-    res.ok ? "Registered! Redirecting to login..." : data.error;
+  const msgEl = document.getElementById("authMessage");
+  msgEl.textContent = res.ok ? "Registered! Redirecting to login..." : data.error;
 
   if (res.ok) {
     setTimeout(() => {

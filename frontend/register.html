@@ -48,6 +48,7 @@
       <span class="prompt">></span>
       <input type="text" id="phone" placeholder="PHONE NUMBER">
     </div>
+    <div id="phoneFeedback" class="password-feedback"></div>
 
     <div class="button-container">
       <button id="registerBtn" class="retro-btn">REGISTER</button>
@@ -187,17 +188,14 @@
       ctx.shadowBlur = 0;
     }
 
-    // ========== REGISTRATION LOGIC ==========
-    const API_URL = "http://localhost:3000";
+    // ========== PASSWORD STRENGTH ==========
+    const passwordInput = document.getElementById("password");
+    const passwordFeedback = document.getElementById("passwordFeedback");
 
     function isStrongPassword(password) {
       const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
       return regex.test(password);
     }
-
-    // Password strength feedback (live)
-    const passwordInput = document.getElementById("password");
-    const passwordFeedback = document.getElementById("passwordFeedback");
 
     passwordInput.addEventListener("input", () => {
       const pwd = passwordInput.value;
@@ -215,6 +213,34 @@
       }
     });
 
+    // ========== PHONE VALIDATION (9 or 10 digits) ==========
+    const phoneInput = document.getElementById("phone");
+    const phoneFeedback = document.getElementById("phoneFeedback");
+
+    function isValidPhone(phone) {
+      const phoneRegex = /^\d{9,10}$/; // exactly 9 or 10 digits
+      return phoneRegex.test(phone);
+    }
+
+    phoneInput.addEventListener("input", () => {
+      const phone = phoneInput.value.trim();
+      if (!phone) {
+        phoneFeedback.textContent = "";
+        phoneFeedback.classList.remove("strong");
+        return;
+      }
+      if (isValidPhone(phone)) {
+        phoneFeedback.textContent = "Valid phone number ✅";
+        phoneFeedback.classList.add("strong");
+      } else {
+        phoneFeedback.textContent = "Phone number must be 9 or 10 digits (numbers only)";
+        phoneFeedback.classList.remove("strong");
+      }
+    });
+
+    // ========== REGISTRATION ==========
+    const API_URL = "http://localhost:3000";
+
     async function register() {
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value.trim();
@@ -227,6 +253,11 @@
 
       if (!isStrongPassword(password)) {
         passwordFeedback.textContent = "Password does not meet requirements!";
+        return;
+      }
+
+      if (!isValidPhone(phone)) {
+        phoneFeedback.textContent = "Phone number must be 9 or 10 digits!";
         return;
       }
 
