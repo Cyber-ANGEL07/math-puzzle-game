@@ -70,9 +70,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// ==========================
 // LOGIN route
-// ==========================
 app.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -112,10 +110,12 @@ app.post("/api/saveScore/:game", async (req, res) => {
 
     if (game === "trivia") {
       user.triviaScores.push({ level, score });
+
       // Compute totalScore for all trivia attempts
       user.triviaTotalScore = user.triviaScores.reduce((acc, s) => acc + s.score, 0);
     } else if (game === "math") {
       user.mathScores.push({ level, score });
+
       // Compute totalScore for all math attempts
       user.mathTotalScore = user.mathScores.reduce((acc, s) => acc + s.score, 0);
     } else {
@@ -135,12 +135,7 @@ app.post("/api/saveScore/:game", async (req, res) => {
   }
 });
 
-// ==========================
 // GET LEADERBOARD
-// ==========================
-// ==========================
-// GET LEADERBOARD
-// ==========================
 app.get("/api/leaderboard/:game", async (req, res) => {
   try {
     const { game } = req.params;
@@ -227,8 +222,6 @@ app.get("/api/trivia", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-
 
 // Start server
 const PORT = process.env.PORT || 3000;

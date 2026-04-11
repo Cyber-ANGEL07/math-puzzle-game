@@ -140,7 +140,7 @@ function checkMathAnswer() {
     if (userAnswer === mathAnswer) {
         score += 10;
         if (score > 30) score = 30;
-        showFeedback("✅ Correct!");
+        showFeedback("Correct!");
         if (typeof flashScreen !== 'undefined') flashScreen('green');
         if (typeof playSound !== 'undefined') playSound(correctBeep);
         if (!chainStarted) {
@@ -151,7 +151,7 @@ function checkMathAnswer() {
         }
     } else {
         attemptsLeft--;
-        showFeedback(`❌ Wrong! Attempts left: ${attemptsLeft}`);
+        showFeedback(`Wrong! Attempts left: ${attemptsLeft}`);
         if (typeof flashScreen !== 'undefined') flashScreen('red');
         if (typeof playSound !== 'undefined') playSound(wrongBeep);
         previousAnswer = null;

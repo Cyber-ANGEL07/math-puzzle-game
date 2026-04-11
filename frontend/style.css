@@ -1,7 +1,3 @@
-/* style.css - VINTAGE CRT THEME */
-/* All HTML structure, IDs, classes REMAIN THE SAME */
-/* Complete retro 80s/90s terminal aesthetic */
-
 /* Import retro fonts */
 @import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap');
 
@@ -15,9 +11,9 @@ body {
   margin: 0;
   overflow: hidden;
   position: relative;
-  background-color: #0a0a0a; /* deep black */
-  color: #ffb000; /* warm amber */
-  font-size: 22px; /* VT323 looks better bigger */
+  background-color: #0a0a0a; 
+  color: #ffb000; 
+  font-size: 22px; 
 }
 
 /* CRT SCREEN EFFECT - entire screen is a monitor */
@@ -62,7 +58,7 @@ body::after {
   width: 96%;
   height: 96%;
   z-index: -1;
-  border-radius: 50px; /* big curve like old CRT */
+  border-radius: 50px;
 }
 
 /* Menu container - OLD TERMINAL WINDOW */
@@ -70,7 +66,7 @@ body::after {
   background: #0f0f0f;
   padding: 40px 30px;
   border: 4px solid #cc8800;
-  border-radius: 20px 20px 40px 40px; /* rounded top, flat bottom */
+  border-radius: 20px 20px 40px 40px;
   box-shadow: 
     0 0 0 2px #5a3e00,
     0 0 0 5px #0a0a0a,
@@ -233,8 +229,8 @@ button::after {
 .daily-btn { 
   background: #cc8800;
   color: #000;
-  font-size: 14px; /* smaller for this specific button */
-  letter-spacing: 0.5px; /* tighten spacing a bit */
+  font-size: 14px; 
+  letter-spacing: 0.5px; 
 }
 .logout-btn { 
   background: #996600;
@@ -263,7 +259,7 @@ button::after {
 }
 
 #muteBtn::before, #muteBtn::after {
-  display: none; /* remove brackets */
+  display: none; 
 }
 
 #muteBtn:active {
@@ -293,12 +289,12 @@ button::after {
 }
 
 .game-container {
-  width: 500px;            /* slightly wider for desktop */
-  max-width: 90vw;         /* responsive on mobile */
-  padding: 70px 20px 30px; /* top padding to avoid timer overlap */
+  width: 500px;            
+  max-width: 90vw;         
+  padding: 70px 20px 30px; 
   margin: 0 auto;
   position: relative;
-  overflow: visible;       /* allow timer to be fully visible */
+  overflow: visible;       
 }
 
 /* VINTAGE SCREEN TEXTURE */

@@ -1,6 +1,3 @@
-// ==========================
-// VARIABLES
-// ==========================
 let score = 0;
 let questionNumber = 0;
 const TOTAL_QUESTIONS = 4;
@@ -11,9 +8,7 @@ let maxTime = 10;
 let timerInterval;
 let gameActive = true;
 
-// ==========================
 // UTILITIES
-// ==========================
 function decodeHtml(html) {
   const txt = document.createElement("textarea");
   txt.innerHTML = html;
@@ -36,9 +31,7 @@ function showFeedback(msg, isCorrect) {
   feedbackEl.classList.add(isCorrect ? "correct" : "wrong");
 }
 
-// ==========================
 // CIRCULAR TIMER
-// ==========================
 function startTimer() {
   clearInterval(timerInterval);
   updateTimerUI();
@@ -77,9 +70,7 @@ function updateTimerUI() {
   timerText.textContent = timeLeft + 's';
 }
 
-// ==========================
 // LOAD QUESTION
-// ==========================
 async function loadQuestion() {
   if (!gameActive) return;
   clearInterval(timerInterval);
@@ -130,9 +121,7 @@ async function loadQuestion() {
   }
 }
 
-// ==========================
 // CHECK ANSWER
-// ==========================
 function checkAnswer(selected) {
   clearInterval(timerInterval);
 
@@ -142,12 +131,12 @@ function checkAnswer(selected) {
   if (selected === correctAnswer) {
     score += 10;
     if (score > 30) score = 30;
-    showFeedback("✅ Correct!", true);
+    showFeedback("Correct!", true);
     playSound(correctBeep);
     flashScreen('green');
   } else {
     attemptsLeft--;
-    showFeedback(`❌ Wrong! Correct: ${correctAnswer}`, false);
+    showFeedback(`Wrong! Correct: ${correctAnswer}`, false);
     playSound(wrongBeep);
     flashScreen('red');
   }

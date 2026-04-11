@@ -67,7 +67,6 @@ function updateTimerUI() {
   progressCircle.style.stroke = timeLeft <= 5 ? '#f00' : '#ffb000';
   timerText.textContent = timeLeft + 's';
 }
-// =================================
 
 function generateHint(answer) {
   if (!isNaN(answer)) {
@@ -153,7 +152,7 @@ function checkAnswer() {
   if (userAnswer.toLowerCase() === triviaAnswer.toLowerCase()) {
     score += 10;
     if (score > 30) score = 30;
-    showFeedback("✅ Correct! +10 points", true);
+    showFeedback("Correct! +10 points", true);
     playSound(correctBeep);
     flashScreen('green');
     updateStats();
@@ -163,7 +162,7 @@ function checkAnswer() {
     updateStats();
     if (attemptsLeft > 0) {
       const hintMessage = (attemptsLeft === 2) ? generateHint(triviaAnswer) : "";
-      showFeedback(`❌ Wrong! Attempts left: ${attemptsLeft}\n${hintMessage}`, false);
+      showFeedback(`Wrong! Attempts left: ${attemptsLeft}\n${hintMessage}`, false);
       playSound(wrongBeep);
       flashScreen('red');
       // Restart timer for same question

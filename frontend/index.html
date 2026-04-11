@@ -5,281 +5,184 @@
   <title>Brain vs Speed: Let’s Go!</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
-  <!-- ADD THESE FONTS for retro theme -->
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <style>
+    .hidden { display: none !important; }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(2px);
+    }
+    .modal-content {
+      background: #0f0f0f;
+      padding: 25px 30px 30px;
+      border: 8px double #cc8800;
+      border-radius: 20px;
+      text-align: center;
+      width: 90%;
+      max-width: 550px;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 0 0 4px #0a0a0a, 0 0 0 8px #5a3e00, 0 20px 40px black;
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      background: none;
+      border: none;
+      color: #ffb000;
+      font-size: 28px;
+      cursor: pointer;
+      font-family: 'VT323', monospace;
+      box-shadow: none;
+      width: auto;
+      padding: 0;
+      line-height: 1;
+    }
+    .modal-close:hover { color: #ffcc66; transform: scale(1.1); }
+    .modal-close:active { transform: translateY(0); }
+
+    .how-to-play-content { text-align: left; }
+    .how-to-play-text { font-family: 'VT323', monospace; font-size: 1.2rem; color: #ffb000; margin: 20px 0; }
+    .how-to-play-text h3 { font-family: 'Press Start 2P', cursive; font-size: 0.9rem; margin: 15px 0 5px; color: #ffcc66; }
+    .how-to-play-text p { margin: 5px 0 15px; line-height: 1.4; }
+    .retro-quote { text-align: center; font-style: italic; margin-top: 20px; border-top: 1px dashed #cc8800; padding-top: 15px; }
+  </style>
 </head>
 <body>
 
- <!-- Background Music -->
 <audio id="bgm" loop preload="auto">
   <source src="assets/audio/bgm.mp3" type="audio/mpeg">
   Your browser does not support the audio element.
 </audio>
 
-<!-- Button Click Sound -->
 <audio id="clickSound" preload="auto">
-  <source src="assets/audio/click_button.mp3an" type="audio/mpeg">
+  <!-- FIXED typo: removed "mp3an" -->
+  <source src="assets/audio/click_button.mp3" type="audio/mpeg">
 </audio>
 
-<!-- Weird sound for all buttons -->
 <audio id="buttonSound" preload="auto">
   <source src="assets/audio/click_button.mp3" type="audio/mpeg">
 </audio>
 
-<!-- Mute Button -->
 <button id="muteBtn" onclick="toggleMute()">🔊</button>
 <button id="leaderboardBtn" class="leaderboard-icon" onclick="location.href='leaderboard.html'">🏆</button>
-  <!-- Background canvas for retro effect -->
-  <canvas id="bgCanvas"></canvas>
+<canvas id="bgCanvas"></canvas>
 
-  <!-- Menu container -->
-  <div class="menu-container">
-    <h1> Brain vs Speed: Let’s Go!</h1>
-    <p id="greeting">Yo <span id="playerName" class="username"></span>!  Time  to  get  those  neurons  moving!</p>
+<div class="menu-container">
+  <h1> Brain vs Speed: Let’s Go!</h1>
+  <p id="greeting">Yo <span id="playerName" class="username"></span>! Time to get those neurons moving!</p>
 
-    <div class="button-container">
-      <button class="play-btn" onclick="startGame()">Start Game</button>
-      <button class="daily-btn" onclick="dailyChallenge()">Daily Challenge</button>
-      <button class="logout-btn" onclick="logout()">Logout</button>
+  <div class="button-container">
+    <button class="play-btn" onclick="startGame()">Start Game</button>
+    <button class="help-btn" onclick="showHowToPlay()">How To Play</button>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<div id="howToPlayModal" class="modal hidden">
+  <div class="modal-content how-to-play-content">
+    <button class="modal-close" id="closeHowToPlayX">✕</button>
+    <h2>HOW TO PLAY</h2>
+    <div class="how-to-play-text">
+      <h3>MATH MODE</h3>
+      <p>Solve math puzzles in sequence. Each new question depends on the PREVIOUS answer, so remember your results carefully!</p>
+      <h3>TRIVIA MODE</h3>
+      <p>Answer science‑based questions correctly to progress through challenges.</p>
+      <h3>SPEED MATTERS</h3>
+      <p>Faster answers = higher scores. The timer counts down – answer before it hits zero!</p>
+      <h3>COMPETE</h3>
+      <p>Climb the leaderboard and beat other players. Perfect scores unlock harder levels.</p>
+      <p class="retro-quote">Good luck, and keep your brain sharp!</p>
+    </div>
+    <div class="modal-buttons">
+      <button id="closeHowToPlayBtn" class="retro-btn">GOT IT</button>
     </div>
   </div>
+</div>
 
-  <script>
-    // ==================== USER CHECK ====================
-    const userId = localStorage.getItem("userId");
-    const username = localStorage.getItem("username");
-  
-    if (!userId) window.location.href = "auth.html";
-  
-    document.getElementById("playerName").textContent = username;
-  
-    // ==================== GREETING ANIMATION ====================
-    const greeting = document.getElementById("greeting");
-    greeting.innerHTML = greeting.textContent.split('').map(char => {
-      if (char === ' ') return ' ';
-      return `<span class="letter">${char}</span>`;
-    }).join('');
-  
-    document.addEventListener('mousemove', e => {
-      const letters = document.querySelectorAll('.letter');
-      letters.forEach((letter, index) => {
-        const offsetX = (e.clientX - window.innerWidth/2) * 0.01 * (index % 5);
-        const offsetY = (e.clientY - window.innerHeight/2) * 0.01 * (index % 5);
-        letter.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
-  
-        clearTimeout(letter.resetTimeout);
-        letter.resetTimeout = setTimeout(() => {
-          letter.style.transform = `translate(0, 0)`;
-        }, 1500);
-      });
+<script>
+  // USER CHECK
+  const userId = localStorage.getItem("userId");
+  const username = localStorage.getItem("username");
+  if(!userId) window.location.href="auth.html";
+  document.getElementById("playerName").textContent = username;
+
+  // GREETING ANIMATION
+  const greeting = document.getElementById("greeting");
+  greeting.innerHTML = greeting.textContent.split('').map(c => c===' ' ? ' ' : `<span class="letter">${c}</span>`).join('');
+  document.addEventListener('mousemove', e=>{
+    document.querySelectorAll('.letter').forEach((letter,i)=>{
+      const offsetX=(e.clientX-window.innerWidth/2)*0.01*(i%5);
+      const offsetY=(e.clientY-window.innerHeight/2)*0.01*(i%5);
+      letter.style.transform=`translate(${offsetX}px,${offsetY}px)`;
+      clearTimeout(letter.resetTimeout);
+      letter.resetTimeout=setTimeout(()=>{letter.style.transform=`translate(0,0)`},1500);
     });
-  
-    // ==================== AUDIO SETUP ====================
-    const bgm = document.getElementById("bgm");
-    const clickSound = document.getElementById("clickSound");
-    const buttonSound = document.getElementById("buttonSound");
-    const muteBtn = document.getElementById("muteBtn");
-  
-    // Load mute state from localStorage (default: unmuted)
-    let isMuted = localStorage.getItem("bgmMuted") === "true";
-  
-    function setMuted(muted) {
-      isMuted = muted;
-      bgm.muted = muted;
-      clickSound.muted = muted;
-      buttonSound.muted = muted;
-      muteBtn.textContent = muted ? "🔇" : "🔊";
-      localStorage.setItem("bgmMuted", muted);
-    }
-  
-    // Initial mute state
-    setMuted(isMuted);
-  
-    function toggleMute() {
-      setMuted(!isMuted);
-    }
-  
-    // Safely play a sound (for UI feedback)
-    function playSound(sound) {
-      if (!isMuted && sound) {
-        sound.currentTime = 0;
-        sound.play().catch(e => console.log("Sound play failed:", e));
-      }
-    }
-  
-    // Play click sound for buttons (used by onclick)
-    function playClick() {
-      playSound(clickSound);
-    }
-  
-    // Play button sound (for navigation)
-    function playButtonSound() {
-      playSound(buttonSound);
-    }
-  
-    // Attempt to start BGM (with retry on user interaction)
-    let bgmStarted = false;
-  
-    function startBGM() {
-      if (bgmStarted) return;
-      bgm.volume = 0.2;
-      bgm.play()
-        .then(() => {
-          bgmStarted = true;
-          console.log("BGM started");
-        })
-        .catch(err => {
-          console.log("BGM autoplay failed:", err);
-          // Will retry on first user click
-        });
-    }
-  
-    // Retry BGM on any user click if not started
-    function retryBGMOnInteraction() {
-      if (!bgmStarted) {
-        startBGM();
-        // Remove listener after first click to avoid multiple attempts
-        document.removeEventListener('click', retryBGMOnInteraction);
-        document.removeEventListener('keydown', retryBGMOnInteraction);
-        document.removeEventListener('touchstart', retryBGMOnInteraction);
-      }
-    }
-  
-    // Start BGM on page load
-    window.onload = () => {
-      startBGM();
-      // If autoplay fails, listen for user interaction
-      document.addEventListener('click', retryBGMOnInteraction);
-      document.addEventListener('keydown', retryBGMOnInteraction);
-      document.addEventListener('touchstart', retryBGMOnInteraction);
-  
-      // Initialize retro oscilloscope
-      initOscilloscope();
-    };
-  
-    // ==================== RETRO OSCILLOSCOPE ====================
-    const canvas = document.getElementById("bgCanvas");
-    const ctx = canvas.getContext("2d");
-    let time = 0;
-  
-    function initOscilloscope() {
-      resizeCanvas();
-      animate();
-    }
-  
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-  
-    window.addEventListener('resize', resizeCanvas);
-  
-    function animate() {
-      time += 0.05;
-  
-      // Fade to black slowly
-      ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
-      drawGrid();
-      drawWaveform();
-      drawScanningDot();
-  
-      requestAnimationFrame(animate);
-    }
-  
-    function drawGrid() {
-      ctx.strokeStyle = 'rgba(255, 176, 0, 0.1)';
-      ctx.lineWidth = 1;
-      for (let x = 0; x < canvas.width; x += 50) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, canvas.height);
-        ctx.strokeStyle = 'rgba(255, 176, 0, 0.05)';
-        ctx.stroke();
-      }
-      for (let y = 0; y < canvas.height; y += 50) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvas.width, y);
-        ctx.strokeStyle = 'rgba(255, 176, 0, 0.05)';
-        ctx.stroke();
-      }
-    }
-  
-    function drawWaveform() {
-      ctx.beginPath();
-      ctx.strokeStyle = '#ffb000';
-      ctx.lineWidth = 2;
-      ctx.shadowColor = '#ffb000';
-      ctx.shadowBlur = 10;
-  
-      const centerY = canvas.height / 2;
-  
-      for (let x = 0; x < canvas.width; x += 5) {
-        const y = centerY + 
-          Math.sin(x * 0.02 + time) * 30 + 
-          Math.sin(x * 0.01 + time * 2) * 15 +
-          Math.cos(x * 0.03 + time * 1.3) * 10;
-        if (x === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-    }
-  
-    function drawScanningDot() {
-      const x = (time * 50) % canvas.width;
-      const centerY = canvas.height / 2;
-      const y = centerY + 
-        Math.sin(x * 0.02 + time) * 30 + 
-        Math.sin(x * 0.01 + time * 2) * 15 +
-        Math.cos(x * 0.03 + time * 1.3) * 10;
-  
-      ctx.shadowColor = '#ffb000';
-      ctx.shadowBlur = 20;
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(x, y, 4, 0, Math.PI * 2);
-      ctx.fill();
-  
-      ctx.shadowBlur = 10;
-      ctx.fillStyle = '#ffb000';
-      ctx.beginPath();
-      ctx.arc(x, y, 2, 0, Math.PI * 2);
-      ctx.fill();
-  
-      ctx.shadowBlur = 0;
-    }
-  
-    // ==================== NAVIGATION FUNCTIONS ====================
-    function startGame() {
-      playButtonSound();
-      setTimeout(() => {
-        window.location.href = "levels.html";
-      }, 500);
-    }
-  
-    function dailyChallenge() {
-      playButtonSound();
-      const today = new Date().toDateString();
-      const lastPlayed = localStorage.getItem("dailyChallengeDate");
-      if (lastPlayed === today) {
-        alert("You already played today's challenge!");
-      } else {
-        localStorage.setItem("dailyChallengeDate", today);
-        alert("Starting Daily Challenge!");
-        window.location.href = "levels.html";
-      }
-    }
-  
-    function logout() {
-      playButtonSound();
-      setTimeout(() => {
-        localStorage.clear();
-        window.location.href = "auth.html";
-      }, 500);
-    }
-  </script>
+  });
+
+  // AUDIO
+  const bgm=document.getElementById("bgm");
+  const clickSound=document.getElementById("clickSound");
+  const buttonSound=document.getElementById("buttonSound");
+  const muteBtn=document.getElementById("muteBtn");
+  let isMuted = localStorage.getItem("bgmMuted")==="true";
+  function setMuted(m){ isMuted=m; bgm.muted=m; clickSound.muted=m; buttonSound.muted=m; muteBtn.textContent=m?"🔇":"🔊"; localStorage.setItem("bgmMuted",m);}
+  setMuted(isMuted);
+  function toggleMute(){ setMuted(!isMuted); }
+  function playSound(s){ if(!isMuted && s){ s.currentTime=0; s.play().catch(()=>{}); } }
+  function playClick(){ playSound(clickSound); }
+  function playButtonSound(){ playSound(buttonSound); }
+
+  let bgmStarted=false;
+  function startBGM(){ if(bgmStarted) return; bgm.volume=0.2; bgm.play().then(()=>{bgmStarted=true;}).catch(()=>{}); }
+  function retryBGMOnInteraction(){ if(!bgmStarted){ startBGM(); document.removeEventListener('click',retryBGMOnInteraction); document.removeEventListener('keydown',retryBGMOnInteraction); document.removeEventListener('touchstart',retryBGMOnInteraction); } }
+
+  window.onload = ()=>{
+    startBGM();
+    document.addEventListener('click',retryBGMOnInteraction);
+    document.addEventListener('keydown',retryBGMOnInteraction);
+    document.addEventListener('touchstart',retryBGMOnInteraction);
+    initOscilloscope();
+  };
+
+  // RETRO OSCILLOSCOPE
+  const canvas=document.getElementById("bgCanvas");
+  const ctx=canvas.getContext("2d");
+  let time=0;
+  function initOscilloscope(){ resizeCanvas(); animate(); }
+  function resizeCanvas(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
+  window.addEventListener('resize', resizeCanvas);
+  function animate(){ time+=0.05; ctx.fillStyle='rgba(10,10,10,0.1)'; ctx.fillRect(0,0,canvas.width,canvas.height); drawGrid(); drawWaveform(); drawScanningDot(); requestAnimationFrame(animate);}
+  function drawGrid(){ for(let x=0;x<canvas.width;x+=50){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height); ctx.strokeStyle='rgba(255,176,0,0.05)';ctx.stroke();} for(let y=0;y<canvas.height;y+=50){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();}}
+  function drawWaveform(){ ctx.beginPath(); ctx.strokeStyle='#ffb000'; ctx.lineWidth=2; ctx.shadowColor='#ffb000'; ctx.shadowBlur=10; const cY=canvas.height/2; for(let x=0;x<canvas.width;x+=5){ const y=cY+Math.sin(x*0.02+time)*30+Math.sin(x*0.01+time*2)*15+Math.cos(x*0.03+time*1.3)*10; if(x===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);} ctx.stroke(); ctx.shadowBlur=0;}
+  function drawScanningDot(){ const x=(time*50)%canvas.width; const cY=canvas.height/2; const y=cY+Math.sin(x*0.02+time)*30+Math.sin(x*0.01+time*2)*15+Math.cos(x*0.03+time*1.3)*10; ctx.shadowColor='#ffb000'; ctx.shadowBlur=20; ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=10; ctx.fillStyle='#ffb000'; ctx.beginPath(); ctx.arc(x,y,2,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0; }
+
+  // MODAL
+  const modal=document.getElementById("howToPlayModal");
+  const closeBtn=document.getElementById("closeHowToPlayBtn");
+  const closeX=document.getElementById("closeHowToPlayX");
+  function showHowToPlay(){ playButtonSound(); modal.classList.remove("hidden"); }
+  function closeHowToPlay(){ playClick(); modal.classList.add("hidden"); }
+  closeX.addEventListener("click", closeHowToPlay);
+  closeBtn.addEventListener("click", closeHowToPlay);
+  modal.addEventListener("click", e=>{ if(e.target===modal) closeHowToPlay(); });
+  window.showHowToPlay = showHowToPlay;
+
+  // NAVIGATION
+  function startGame(){ playButtonSound(); setTimeout(()=>{ window.location.href="levels.html"; },500);}
+  function logout(){ playButtonSound(); setTimeout(()=>{ localStorage.clear(); window.location.href="auth.html"; },500);}
+</script>
 </body>
 </html>

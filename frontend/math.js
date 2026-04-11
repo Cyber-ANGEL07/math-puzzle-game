@@ -1,6 +1,3 @@
-// ==========================
-// VARIABLES
-// ==========================
 let score = 0;
 let previousAnswer = null;
 let currentQuestion = "";
@@ -14,9 +11,7 @@ let TIME_PER_QUESTION = 15;
 let timeLeft = TIME_PER_QUESTION;
 let timerInterval;
 
-// ==========================
 // UTILITY FUNCTIONS
-// ==========================
 function getNumberBasedOnDifficulty() {
     return Math.floor(Math.random() * 10) + 1;
 }
@@ -31,9 +26,7 @@ function updateStats() {
     document.getElementById("attemptsValue").textContent = attemptsLeft;
 }
 
-// ==========================
 // TIMER FUNCTIONS (circular)
-// ==========================
 function startTimer() {
     clearInterval(timerInterval);
     timeLeft = TIME_PER_QUESTION;
@@ -71,9 +64,7 @@ function updateTimerUI() {
     }
 }
 
-// ==========================
 // QUESTION GENERATORS
-// ==========================
 function generateFirstQuestion() {
     const num1 = getNumberBasedOnDifficulty();
     const num2 = getNumberBasedOnDifficulty();
@@ -132,9 +123,7 @@ function generateChainQuestion() {
     document.getElementById("mathQuestion").textContent = currentQuestion;
 }
 
-// ==========================
 // CHECK ANSWER
-// ==========================
 function checkMathAnswer() {
     if (gameOver) return;
     const userAnswer = parseInt(document.getElementById("mathInput").value);
@@ -147,7 +136,7 @@ function checkMathAnswer() {
     if (userAnswer === mathAnswer) {
         score += 10;
         if (score > 30) score = 30;
-        showFeedback("✅ Correct!");
+        showFeedback("Correct!");
         if (typeof flashScreen !== 'undefined') flashScreen('green');
         if (typeof playSound !== 'undefined') playSound(correctBeep);
         if (!chainStarted) {
@@ -158,7 +147,7 @@ function checkMathAnswer() {
         }
     } else {
         attemptsLeft--;
-        showFeedback(`❌ Wrong! Attempts left: ${attemptsLeft}`);
+        showFeedback(`Wrong! Attempts left: ${attemptsLeft}`);
         if (typeof flashScreen !== 'undefined') flashScreen('red');
         if (typeof playSound !== 'undefined') playSound(wrongBeep);
         previousAnswer = null;
@@ -175,9 +164,7 @@ function checkMathAnswer() {
     }
 }
 
-// ==========================
 // LOAD QUESTION
-// ==========================
 function loadMathQuestion() {
     document.getElementById("mathInput").value = "";
     if (chainStarted && previousAnswer !== null) {
@@ -188,9 +175,7 @@ function loadMathQuestion() {
     startTimer();
 }
 
-// ==========================
 // HANDLE NEXT QUESTION (timeout)
-// ==========================
 function handleNextQuestion(correct) {
     mathQuestionNumber++;
     if (mathQuestionNumber >= MAX_QUESTIONS || attemptsLeft <= 0) {
@@ -200,9 +185,7 @@ function handleNextQuestion(correct) {
     }
 }
 
-// ==========================
 // END GAME / SHOW MODAL (with star pop animation & sound)
-// ==========================
 function endMathGame() {
     gameOver = true;
     clearInterval(timerInterval);
@@ -246,9 +229,7 @@ async function sendMathScore() {
     }
 }
 
-// ==========================
 // BUTTON EVENT LISTENERS
-// ==========================
 document.getElementById("submitBtn").addEventListener("click", checkMathAnswer);
 document.getElementById("retryBtn").onclick = () => location.reload(true);
 document.getElementById("homeBtn").onclick = () => window.location.href = "index.html";
@@ -264,9 +245,7 @@ document.getElementById("nextBtn").onclick = () => {
 };
 document.getElementById("leaderboardBtn").onclick = () => window.location.href = "leaderboard.html";
 
-// ==========================
 // START GAME
-// ==========================
 window.onload = startMathGame;
 
 function startMathGame() {
