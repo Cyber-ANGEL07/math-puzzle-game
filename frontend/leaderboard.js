@@ -1,3 +1,4 @@
+//This code was developed with assistance from a large language model (OpenAI ChatGPT / DeepSeek)
 const gameSelect = document.getElementById("gameSelect");
 const container = document.getElementById("leaderboardContainer");
 

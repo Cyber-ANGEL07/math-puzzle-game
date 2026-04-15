@@ -1,3 +1,5 @@
+// This code was developed with assistance from a large language model (OpenAI ChatGPT / DeepSeek)
+
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({

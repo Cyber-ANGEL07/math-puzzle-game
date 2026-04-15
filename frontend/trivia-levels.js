@@ -1,3 +1,4 @@
+//This code was developed with assistance from a large language model (OpenAI ChatGPT / DeepSeek)
 // ==================== USER CHECK ====================
 const userId = localStorage.getItem("userId");
 if (!userId) window.location.href = "auth.html";

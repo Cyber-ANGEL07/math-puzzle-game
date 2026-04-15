@@ -1,6 +1,4 @@
-// ==========================
-// VARIABLES (HARD MODE)
-// ==========================
+//This code was developed with assistance from a large language model (OpenAI ChatGPT / DeepSeek)
 let score = 0;
 let previousAnswer = null;
 let chainStarted = false;
@@ -14,9 +12,7 @@ let timeLeft = TIME_PER_QUESTION;
 let timerInterval;
 let mathAnswer;
 
-// ==========================
 // UTILITY FUNCTIONS
-// ==========================
 function getNumberBasedOnDifficulty() {
     return Math.floor(Math.random() * 41) + 10; // 10-50
 }
@@ -30,9 +26,7 @@ function updateStats() {
     document.getElementById("attemptsValue").textContent = attemptsLeft;
 }
 
-// ==========================
 // CIRCULAR TIMER
-// ==========================
 function startTimer() {
     clearInterval(timerInterval);
     timeLeft = TIME_PER_QUESTION;
@@ -68,9 +62,7 @@ function updateTimerUI() {
     if (timerText) timerText.textContent = timeLeft + 's';
 }
 
-// ==========================
 // QUESTION GENERATORS
-// ==========================
 function generateFirstQuestion() {
     const num1 = getNumberBasedOnDifficulty();
     const num2 = getNumberBasedOnDifficulty();
@@ -125,9 +117,7 @@ function generateChainQuestion() {
     document.getElementById("mathQuestion").textContent = currentQuestion;
 }
 
-// ==========================
 // CHECK ANSWER
-// ==========================
 function checkMathAnswer() {
     if (gameOver) return;
     const userAnswer = parseInt(document.getElementById("mathInput").value);
@@ -168,9 +158,7 @@ function checkMathAnswer() {
     }
 }
 
-// ==========================
 // LOAD QUESTION
-// ==========================
 function loadMathQuestion() {
     document.getElementById("mathInput").value = "";
     if (chainStarted && previousAnswer !== null) {
@@ -181,9 +169,7 @@ function loadMathQuestion() {
     startTimer();
 }
 
-// ==========================
 // HANDLE NEXT QUESTION (timeout)
-// ==========================
 function handleNextQuestion(correct) {
     mathQuestionNumber++;
     if (mathQuestionNumber >= MAX_QUESTIONS || attemptsLeft <= 0) {
@@ -193,9 +179,7 @@ function handleNextQuestion(correct) {
     }
 }
 
-// ==========================
 // END GAME / SHOW MODAL
-// ==========================
 function endMathGame() {
     gameOver = true;
     clearInterval(timerInterval);
@@ -222,9 +206,7 @@ function endMathGame() {
     sendMathScore();
 }
 
-// ==========================
 // SEND SCORE
-// ==========================
 async function sendMathScore() {
     const userId = localStorage.getItem("userId");
     if (!userId) return;
@@ -242,9 +224,7 @@ async function sendMathScore() {
     }
 }
 
-// ==========================
 // BUTTON EVENT LISTENERS
-// ==========================
 document.getElementById("submitBtn").addEventListener("click", () => {
     if (typeof playSound !== 'undefined') playSound(clickSound);
     checkMathAnswer();
@@ -278,9 +258,7 @@ document.getElementById("leaderboardBtn").onclick = () => {
     window.location.href = "leaderboard.html";
 };
 
-// ==========================
 // START GAME
-// ==========================
 window.onload = startMathGame;
 
 function startMathGame() {

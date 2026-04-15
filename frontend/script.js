@@ -1,9 +1,4 @@
-/*
-  Banana Math Game JS
-  Fully corrected version
-  Handles menu, game UI, username, notifications, and daily challenge
-*/
-
+//This code was developed with assistance from a large language model (OpenAI ChatGPT / DeepSeek)
 // Utility: notification system
 function showNotification(message, isError = false) {
     const note = document.getElementById('notification');

@@ -1,5 +1,5 @@
+//This code was developed with assistance from a large language model (OpenAI ChatGPT / DeepSeek)
 // ================= SOUND HELPER =================
-// (Global functions defined in HTML, but we keep a local reference)
 function playSound(sound) {
     if (!sound) return;
     sound.currentTime = 0;

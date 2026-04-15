@@ -1,3 +1,4 @@
+//This code was developed with assistance from a large language model (OpenAI ChatGPT / DeepSeek)
 const API_URL = "http://localhost:3000";
 
 async function register() {

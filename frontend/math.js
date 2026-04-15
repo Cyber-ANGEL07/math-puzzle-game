@@ -1,3 +1,4 @@
+//This code was developed with assistance from a large language model (OpenAI ChatGPT / DeepSeek)
 let score = 0;
 let previousAnswer = null;
 let currentQuestion = "";

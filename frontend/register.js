@@ -1,3 +1,4 @@
+//This code was developed with assistance from a large language model (OpenAI ChatGPT / DeepSeek)
 const API_URL = "http://localhost:3000";
 
 function isStrongPassword(password) {
@@ -26,7 +27,7 @@ passwordInput.addEventListener("input", () => {
   }
 
   if (checkPasswordStrength(pwd)) {
-    passwordFeedback.textContent = "Strong password ✅";
+    passwordFeedback.textContent = "Strong password";
     passwordFeedback.classList.add("strong");
   } else {
     passwordFeedback.textContent = 
@@ -52,7 +53,7 @@ phoneInput.addEventListener("input", () => {
     return;
   }
   if (isValidPhone(phone)) {
-    phoneFeedback.textContent = "Valid phone number ✅";
+    phoneFeedback.textContent = "Valid phone number";
     phoneFeedback.classList.add("strong");
   } else {
     phoneFeedback.textContent = "Phone number must be 9 or 10 digits (numbers only)";
